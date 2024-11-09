@@ -12,6 +12,7 @@ import logo from '/aave-com-logo-header.svg';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NavItems from './components/NavItems';
 import styles from './styles/AppHeader.module.less'
+import SettingsMenu from './SettingsMenu';
 interface Props {
   children: React.ReactElement;
 }
@@ -69,6 +70,9 @@ const AppHeader = () => {
           <div className={styles['connect-button-container']}>
             <ConnectButton />
           </div>
+        </Box>
+        <Box>
+          <SettingsMenu />
         </Box>
       </Box>
     </HideOnScroll>
