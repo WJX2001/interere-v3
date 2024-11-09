@@ -2,6 +2,7 @@ import React from 'react';
 import MainLayout from './layouts/MainLayout';
 import { useTheme } from '@mui/material';
 import AppHeader from './layouts/AppHeader';
+import Home from './pages/index.page';
 
 function App() {
   const a = useTheme();
@@ -9,7 +10,7 @@ function App() {
   return (
     <>
       <MainLayout>
-        把中间内容放在这里
+        <Home />
       </MainLayout>
     </>
   );
