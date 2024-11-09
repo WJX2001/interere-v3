@@ -373,6 +373,35 @@ export function getThemedComponents(theme: Theme) {
           },
         ],
       },
+      MuiTypography: {
+        defaultProps: {
+          variant: 'description',
+          variantMapping: {
+            display1: 'h1',
+            h1: 'h1',
+            h2: 'h2',
+            h3: 'h3',
+            h4: 'h4',
+            subheader1: 'p',
+            subheader2: 'p',
+            caption: 'p',
+            description: 'p',
+            buttonL: 'p',
+            buttonM: 'p',
+            buttonS: 'p',
+            main12: 'p',
+            main14: 'p',
+            main16: 'p',
+            main21: 'p',
+            secondary12: 'p',
+            secondary14: 'p',
+            secondary16: 'p',
+            secondary21: 'p',
+            helperText: 'span',
+            tooltip: 'span',
+          },
+        },
+      },
       MuiList: {
         styleOverrides: {
           root: {

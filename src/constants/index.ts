@@ -1,4 +1,4 @@
-import { MenuItemsTypes } from "@/types";
+import { MenuItemsTypes } from '@/types';
 
 
 export const HEADERHEIGHT = 48;
@@ -32,3 +32,9 @@ export const MENUITEMS: MenuItemsTypes[] = [
 ];
 
 export const FONT = 'Inter, Arial';
+
+export const ROUTES = {
+  dashboard: '/',
+  markets: '/markets',
+  staking: '/staking',
+};

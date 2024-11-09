@@ -1,6 +1,7 @@
 import { Box, Container } from '@mui/material';
 import React, { ReactNode } from 'react';
 import AppHeader from './AppHeader';
+import AppFooter from './AppFooter';
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   // 文件主入口
@@ -21,6 +22,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       >
         {children}
       </Box>
+      <AppFooter />
     </Box>
   );
 };
