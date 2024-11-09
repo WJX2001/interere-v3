@@ -38,19 +38,22 @@ const AppGlobalStyles = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const theme = useMemo(() => {
-    const themeCreate = createTheme(getDesignTokens(mode));
-    // return deepmerge(themeCreate,getThemedComponents(themeCreate));
-    return themeCreate
+    // const themeCreate = createTheme(getDesignTokens(mode));
+    const themeCreate = createTheme(getDesignTokens('dark'));
+    return deepmerge(themeCreate, getThemedComponents(themeCreate));
+    // return themeCreate
   }, [mode]);
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+    <>
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline />
+          {children}
+        </ThemeProvider>
+      </ColorModeContext.Provider>
+    </>
   );
 };
 

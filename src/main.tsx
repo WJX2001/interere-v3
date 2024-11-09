@@ -14,26 +14,26 @@ import merge from 'lodash.merge';
 const queryClient = new QueryClient();
 const myTheme = merge(darkTheme(), {
   colors: {
-    accentColor:'linear-gradient(248.86deg, #B6509E 10.51%, #2EBAC6 93.41%)',
+    accentColor: 'linear-gradient(248.86deg, #B6509E 10.51%, #2EBAC6 93.41%)',
     connectButtonBackground: '#383D51',
   },
   radii: {
     actionButton: '0',
-  }
+  },
 });
 
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <StrictMode>
-      <WagmiProvider config={Config}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider theme={myTheme}>
-            <AppGlobalStyles>
-              <App />
-            </AppGlobalStyles>
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </StrictMode>
-  </BrowserRouter>,
+    <BrowserRouter>
+      <StrictMode>
+        <WagmiProvider config={Config}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={myTheme} locale="en">
+              <AppGlobalStyles>
+                <App />
+              </AppGlobalStyles>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </StrictMode>
+    </BrowserRouter>
 );

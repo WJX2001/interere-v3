@@ -427,6 +427,21 @@ export function getThemedComponents(theme: Theme) {
           },
         },
       },
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            fontFamily: FONT,
+            fontWeight: 400,
+            fontSize: pxToRem(14),
+            minWidth: '375px',
+            '> div:first-of-type': {
+              minHeight: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+            },
+          },
+        },
+      },
     },
   };
 }

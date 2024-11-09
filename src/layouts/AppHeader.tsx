@@ -8,8 +8,10 @@ import {
 } from '@mui/material';
 import React from 'react';
 import logo from '/aave-com-logo-header.svg';
-import NavItems from './components/Navitems';
+
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import NavItems from './components/NavItems';
+import styles from './styles/AppHeader.module.less'
 interface Props {
   children: React.ReactElement;
 }
@@ -63,10 +65,10 @@ const AppHeader = () => {
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>
           <NavItems />
         </Box>
-        <Box
-          sx={{ display: 'flex', flexDirection: 'row-reverse', flex: 1 }}
-        >
-          <ConnectButton />
+        <Box sx={{ display: 'flex', flexDirection: 'row-reverse', flex: 1 }}>
+          <div className={styles['connect-button-container']}>
+            <ConnectButton />
+          </div>
         </Box>
       </Box>
     </HideOnScroll>
