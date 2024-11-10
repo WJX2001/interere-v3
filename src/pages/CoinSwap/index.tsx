@@ -1,6 +1,8 @@
 import ConectWalletPaper from '@/components/ConectWalletPaper';
 import { ContentContainer } from '@/components/ContentContainer';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
+import { COINLISTS } from '@/constants';
+import { TokenInfoTypes } from '@/types';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
@@ -10,11 +12,41 @@ import {
   SvgIcon,
   Typography,
 } from '@mui/material';
-import React from 'react';
-import { useAccount } from 'wagmi';
+import React, { useState } from 'react';
+import { useAccount, useChainId } from 'wagmi';
 
 const CoinSwap = () => {
   const { isConnected } = useAccount();
+  const currentChainId = useChainId();
+  console.log(currentChainId, 'lop');
+  const [inputAmount, setInputAmount] = useState('');
+  const [selectedInputToken, setSelectedInputToken] = useState(COINLISTS[0]);
+  const [selectedOutputToken, setSelectedOutputToken] = useState(COINLISTS[3]);
+  const handleSelectedInputToken = (token: TokenInfoTypes) => {
+    setSelectedInputToken(token);
+  };
+
+  const handleSelectedOutputToken = (token: TokenInfoTypes) => {
+    setSelectedOutputToken(token);
+  };
+
+  const handleInputChange = (value: string) => {
+    if (value === '-1') {
+      // setInputAmount('')
+      // TODO: 这里需要补充余额逻辑和防抖逻辑
+    } else {
+      setInputAmount(value);
+    }
+  };
+
+  // switch reverse
+  const onSwitchReserves = () => {
+    const fromToken = selectedInputToken;
+    const toToken = selectedOutputToken;
+    setSelectedInputToken(toToken);
+    setSelectedOutputToken(fromToken);
+  };
+
   return (
     <>
       {isConnected ? (
@@ -30,6 +62,10 @@ const CoinSwap = () => {
             sx={(theme) => ({
               // maxWidth: '380px',
               padding: theme.spacing(6),
+              maxWidth: { xs: '359px', xsm: '420px' },
+              maxHeight: 'calc(100vh - 20px)',
+              overflowY: 'auto',
+              width: '100%',
             })}
           >
             <Typography variant="h2" sx={{ mb: 6 }}>
@@ -45,9 +81,18 @@ const CoinSwap = () => {
                 position: 'relative',
               }}
             >
-              <SwitchAssetInput />
+              <SwitchAssetInput
+                value={inputAmount}
+                chainId={currentChainId}
+                selectedAsset={selectedInputToken}
+                assets={COINLISTS?.filter(
+                  (token) => token.address !== selectedOutputToken.address,
+                )}
+                onSelect={handleSelectedInputToken}
+                onChange={handleInputChange}
+              />
               <IconButton
-                // onClick={onSwitchReserves}
+                onClick={onSwitchReserves}
                 sx={{
                   border: '1px solid',
                   borderColor: 'divider',
@@ -65,7 +110,16 @@ const CoinSwap = () => {
                   <SwitchVerticalIcon />
                 </SvgIcon>
               </IconButton>
-              <SwitchAssetInput />
+              <SwitchAssetInput
+                value=""
+                chainId={currentChainId}
+                selectedAsset={selectedOutputToken}
+                disableInput={true}
+                assets={COINLISTS?.filter(
+                  (token) => token.address !== selectedInputToken.address,
+                )}
+                onSelect={handleSelectedOutputToken}
+              />
             </Box>
             <Box
               sx={{
@@ -75,7 +129,7 @@ const CoinSwap = () => {
                 justifyContent: 'center',
               }}
             >
-              <Button variant="contained"  sx={{ width: '100%' }}>
+              <Button variant="contained" sx={{ width: '100%' }}>
                 Switch
               </Button>
             </Box>

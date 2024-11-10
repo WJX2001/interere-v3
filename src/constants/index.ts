@@ -1,4 +1,4 @@
-import { MenuItemsTypes } from '@/types';
+import { CoinListTypes, MenuItemsTypes } from '@/types';
 
 export const HEADERHEIGHT = 48;
 
@@ -38,7 +38,7 @@ export const ROUTES = {
   staking: '/staking',
 };
 
-export const COINLISTS = [
+export const COINLISTS: CoinListTypes[] = [
   {
     name: 'Tether USD',
     symbol: 'USDT',
@@ -93,7 +93,7 @@ export const COINLISTS = [
     symbol: 'DMD',
     address: '0x66871BD88bddC937c8Da5Fb8fc3Ef7ab09B2336a',
     logoURI:
-      'https://assets.coingecko.com/coins/images/30799/large/Yp9H3agr_400x400.jpg?1696529660',
+      'https://assets.coingecko.com/coins/images/24570/large/FCD_small_200.png?1648193725',
   },
 ];
 

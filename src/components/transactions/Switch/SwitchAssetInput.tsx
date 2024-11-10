@@ -17,6 +17,7 @@ import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
 import { COINLISTS, COMMON_SWAPS } from '@/constants';
+import { CoinListTypes, TokenInfoTypes } from '@/types';
 export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
   oracle?: string;
@@ -24,22 +25,29 @@ export interface TokenInfoWithBalance extends TokenInfo {
 
 interface AssetInputProps {
   value: string;
-  onChange?: (value: string) => void;
+  chainId: number;
   disabled?: boolean;
   disableInput?: boolean;
   maxValue?: string;
-  selectedAsset: TokenInfoWithBalance;
+  assets: TokenInfoTypes[];
+  selectedAsset: TokenInfoTypes;
+  onSelect?: (asset: TokenInfoTypes) => void;
+  onChange?: (value: string) => void;
 }
 
 const SwitchAssetInput = ({
   value = '',
-  onChange,
+  assets,
+  chainId,
   disabled,
   maxValue,
   disableInput,
+  selectedAsset,
+  onChange,
+  onSelect,
 }: AssetInputProps) => {
   const theme = useTheme();
-  const popularAssets = COINLISTS.filter((item) =>
+  const popularAssets = assets?.filter((item) =>
     COMMON_SWAPS.includes(item.symbol),
   );
   const inputRef = useRef<HTMLDivElement>(null);
@@ -47,8 +55,16 @@ const SwitchAssetInput = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  // close menu
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  // select asset
+  const handleSelect = (asset: TokenInfoTypes) => {
+    onSelect?.(asset);
+    onChange?.('');
+    handleClose();
   };
 
   return (
@@ -119,17 +135,16 @@ const SwitchAssetInput = ({
           endIcon={open ? <ExpandLess /> : <ExpandMore />}
         >
           <ExternalTokenIcon
-            symbol={'default'}
-            // logoURI={selectedAsset.logoURI}
+            symbol={selectedAsset?.symbol}
+            logoURI={selectedAsset?.logoURI || COINLISTS[0]?.logoURI}
             sx={{ mr: 2, ml: 3 }}
           />
           <Typography
-            // data-cy={`assetsSelectedOption_${selectedAsset.symbol.toUpperCase()}`}
+            data-cy={`assetsSelectedOption_${selectedAsset.symbol.toUpperCase()}`}
             variant="main16"
             color="text.primary"
           >
-            ETH
-            {/* {selectedAsset.symbol} */}
+            {selectedAsset?.symbol || ''}
           </Typography>
         </Button>
         <Menu
@@ -161,7 +176,7 @@ const SwitchAssetInput = ({
               borderBottom: `1px solid ${theme.palette.divider}`,
               top: 0,
               zIndex: 2,
-              backgroundColor:'#292e41'
+              backgroundColor: '#292e41',
             })}
           >
             <Box
@@ -175,7 +190,7 @@ const SwitchAssetInput = ({
                 gap: 2,
               }}
             >
-              {popularAssets.map((asset) => (
+              {popularAssets?.map((asset) => (
                 <Box
                   key={asset.symbol}
                   sx={{
@@ -191,7 +206,7 @@ const SwitchAssetInput = ({
                       backgroundColor: theme.palette.divider,
                     },
                   }}
-                  // onClick={() => handleSelect(asset)}
+                  onClick={() => handleSelect(asset)}
                 >
                   <ExternalTokenIcon
                     logoURI={asset.logoURI}
@@ -222,15 +237,16 @@ const SwitchAssetInput = ({
               >
                 <CircularProgress sx={{ mx: 'auto', my: 'auto' }} />
               </Box>
-            ) : COINLISTS.length > 0 ? (
-              COINLISTS.map((asset) => (
+            ) : assets.length > 0 ? (
+              assets.map((asset) => (
                 <MenuItem
                   key={asset.symbol}
                   value={asset.symbol}
-                  data-cy={`assetsSelectOption_${asset.symbol.toUpperCase()}`}
+                  data-cy={`assetsSelectOption_${asset.symbol?.toUpperCase()}`}
                   sx={{
                     backgroundColor: theme.palette.background.paper,
                   }}
+                  onClick={() => handleSelect(asset)}
                 >
                   <ExternalTokenIcon
                     symbol={asset.symbol}
