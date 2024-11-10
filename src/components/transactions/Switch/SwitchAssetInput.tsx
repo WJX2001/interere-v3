@@ -1,10 +1,22 @@
-import { Box, Button, IconButton, InputBase, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputBase,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import NumberFormatCustom from './NumberFormatCustom';
 import { XCircleIcon } from '@heroicons/react/solid';
 import { ExternalTokenIcon } from '@/components/primitives/TokenIcon';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
+import { COINLISTS, COMMON_SWAPS } from '@/constants';
 export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
   oracle?: string;
@@ -20,16 +32,28 @@ interface AssetInputProps {
 }
 
 const SwitchAssetInput = ({
-  value,
+  value = '',
   onChange,
   disabled,
   maxValue,
   disableInput,
 }: AssetInputProps) => {
+  const theme = useTheme();
+  const popularAssets = COINLISTS.filter((item) =>
+    COMMON_SWAPS.includes(item.symbol),
+  );
+  const inputRef = useRef<HTMLDivElement>(null);
+  const [loadingNewAsset, setLoadingNewAsset] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box
+      ref={inputRef}
       sx={(theme) => ({
         p: '8px 12px',
         border: `1px solid ${theme.palette.divider}`,
@@ -91,6 +115,7 @@ const SwitchAssetInput = ({
           disableRipple
           data-cy={`assetSelect`}
           sx={{ p: 0, '&:hover': { backgroundColor: 'transparent' } }}
+          onClick={() => setAnchorEl(inputRef.current)}
           endIcon={open ? <ExpandLess /> : <ExpandMore />}
         >
           <ExternalTokenIcon
@@ -107,7 +132,130 @@ const SwitchAssetInput = ({
             {/* {selectedAsset.symbol} */}
           </Typography>
         </Button>
-        
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          PaperProps={{
+            sx: {
+              width: inputRef.current?.offsetWidth,
+              border:
+                theme.palette.mode === 'dark' ? '1px solid #EBEBED1F' : 'unset',
+              boxShadow: '0px 2px 10px 0px #0000001A',
+              overflow: 'hidden',
+            },
+          }}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <Box
+            sx={(theme) => ({
+              p: 2,
+              px: 3,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              top: 0,
+              zIndex: 2,
+              backgroundColor:'#292e41'
+            })}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                overfloyY: 'auto',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                mt: 2,
+                gap: 2,
+              }}
+            >
+              {popularAssets.map((asset) => (
+                <Box
+                  key={asset.symbol}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    p: 1,
+                    borderRadius: '16px',
+                    border: '1px solid',
+                    borderColor: theme.palette.divider,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: theme.palette.divider,
+                    },
+                  }}
+                  // onClick={() => handleSelect(asset)}
+                >
+                  <ExternalTokenIcon
+                    logoURI={asset.logoURI}
+                    symbol={asset.symbol}
+                    sx={{ width: 24, height: 24, mr: 1 }}
+                  />
+                  <Typography
+                    variant="main14"
+                    color="text.primary"
+                    sx={{ mr: 1 }}
+                  >
+                    {asset.symbol}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+          <Box sx={{ overflow: 'auto', maxHeight: '200px' }}>
+            {loadingNewAsset ? (
+              <Box
+                sx={{
+                  maxHeight: '178px',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '60px',
+                }}
+              >
+                <CircularProgress sx={{ mx: 'auto', my: 'auto' }} />
+              </Box>
+            ) : COINLISTS.length > 0 ? (
+              COINLISTS.map((asset) => (
+                <MenuItem
+                  key={asset.symbol}
+                  value={asset.symbol}
+                  data-cy={`assetsSelectOption_${asset.symbol.toUpperCase()}`}
+                  sx={{
+                    backgroundColor: theme.palette.background.paper,
+                  }}
+                >
+                  <ExternalTokenIcon
+                    symbol={asset.symbol}
+                    logoURI={asset.logoURI}
+                    sx={{ mr: 2 }}
+                  />
+                  <ListItemText sx={{ flexGrow: 0 }}>
+                    {asset.symbol}
+                  </ListItemText>
+                </MenuItem>
+              ))
+            ) : (
+              <Typography
+                variant="main14"
+                color="text.primary"
+                sx={{ width: 'auto', textAlign: 'center', m: 4 }}
+              >
+                <Trans>
+                  No results found. You can import a custom token with a
+                  contract address
+                </Trans>
+              </Typography>
+            )}
+          </Box>
+        </Menu>
       </Box>
     </Box>
   );

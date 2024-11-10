@@ -1,5 +1,6 @@
 import { FONT } from '@/constants';
-import { createTheme, Theme, ThemeOptions } from '@mui/material';
+import { CheckCircleIcon, ChevronDownIcon, ExclamationCircleIcon, ExclamationIcon, InformationCircleIcon } from '@heroicons/react/solid';
+import { createTheme, SvgIcon, Theme, ThemeOptions } from '@mui/material';
 
 const theme = createTheme();
 const {
@@ -352,10 +353,47 @@ export const getDesignTokens = (mode: 'light' | 'dark') => {
   } as ThemeOptions;
 };
 
+
 export function getThemedComponents(theme: Theme) {
   return {
     components: {
+      MuiSkeleton: {
+        styleOverrides: {
+          root: {
+            transform: 'unset',
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: '6px',
+            borderColor: theme.palette.divider,
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#CBCDD8',
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#CBCDD8',
+            },
+          },
+        },
+      },
+      MuiSlider: {
+        styleOverrides: {
+          root: {
+            '& .MuiSlider-thumb': {
+              color: theme.palette.mode === 'light' ? '#62677B' : '#C9B3F9',
+            },
+            '& .MuiSlider-track': {
+              color: theme.palette.mode === 'light' ? '#383D51' : '#9C93B3',
+            },
+          },
+        },
+      },
       MuiButton: {
+        defaultProps: {
+          disableElevation: true,
+        },
         styleOverrides: {
           root: {
             borderRadius: '4px',
@@ -436,6 +474,23 @@ export function getThemedComponents(theme: Theme) {
           },
         },
       },
+      MuiLink: {
+        defaultProps: {
+          variant: 'description',
+        },
+      },
+      MuiMenu: {
+        defaultProps: {
+          PaperProps: {
+            elevation: 0,
+            variant: 'outlined',
+            style: {
+              minWidth: 240,
+              marginTop: '4px',
+            },
+          },
+        },
+      },
       MuiList: {
         styleOverrides: {
           root: {
@@ -449,6 +504,64 @@ export function getThemedComponents(theme: Theme) {
             paddingBottom: '4px',
           },
         },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            padding: '12px 16px',
+          },
+        },
+      },
+      MuiListItemText: {
+        styleOverrides: {
+          root: {
+            ...theme.typography.subheader1,
+          },
+        },
+      },
+      MuiListItemIcon: {
+        styleOverrides: {
+          root: {
+            color: theme.palette.primary.light,
+            minWidth: 'unset !important',
+            marginRight: '12px',
+          },
+        },
+      },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: '4px',
+          },
+        },
+        variants: [
+          {
+            props: { variant: 'outlined' },
+            style: {
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.2), 0px 2px 10px rgba(0, 0, 0, 0.1)',
+              background:
+                theme.palette.mode === 'light'
+                  ? theme.palette.background.paper
+                  : theme.palette.background.surface,
+            },
+          },
+          {
+            props: { variant: 'elevation' },
+            style: {
+              boxShadow: '0px 2px 1px rgba(0, 0, 0, 0.05), 0px 0px 1px rgba(0, 0, 0, 0.25)',
+              ...(theme.palette.mode === 'dark' ? { backgroundImage: 'none' } : {}),
+            },
+          },
+        ],
       },
       MuiContainer: {
         styleOverrides: {
@@ -490,6 +603,178 @@ export function getThemedComponents(theme: Theme) {
           },
         },
       },
+      MuiSwitch: {
+        styleOverrides: {
+          root: {
+            height: 20 + 6 * 2,
+            width: 34 + 6 * 2,
+            padding: 6,
+          },
+          switchBase: {
+            padding: 8,
+            '&.Mui-checked': {
+              transform: 'translateX(14px)',
+              '& + .MuiSwitch-track': {
+                backgroundColor: theme.palette.success.main,
+                opacity: 1,
+              },
+            },
+            '&.Mui-disabled': {
+              opacity: theme.palette.mode === 'dark' ? 0.3 : 0.7,
+            },
+          },
+          thumb: {
+            color: theme.palette.common.white,
+            borderRadius: '6px',
+            width: '16px',
+            height: '16px',
+            boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.12)',
+          },
+          track: {
+            opacity: 1,
+            backgroundColor: theme.palette.action.active,
+            borderRadius: '8px',
+          },
+        },
+      },
+      MuiIcon: {
+        variants: [
+          {
+            props: { fontSize: 'large' },
+            style: {
+              fontSize: pxToRem(32),
+            },
+          },
+        ],
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderColor: theme.palette.divider,
+          },
+        },
+      },
+      MuiAlert: {
+        styleOverrides: {
+          root: {
+            boxShadow: 'none',
+            borderRadius: '4px',
+            padding: '8px 12px',
+            ...theme.typography.caption,
+            alignItems: 'flex-start',
+            '.MuiAlert-message': {
+              padding: 0,
+              paddingTop: '2px',
+              paddingBottom: '2px',
+            },
+            '.MuiAlert-icon': {
+              padding: 0,
+              opacity: 1,
+              '.MuiSvgIcon-root': {
+                fontSize: pxToRem(20),
+              },
+            },
+            a: {
+              ...theme.typography.caption,
+              fontWeight: 500,
+              textDecoration: 'underline',
+              '&:hover': {
+                textDecoration: 'none',
+              },
+            },
+            '.MuiButton-text': {
+              ...theme.typography.caption,
+              fontWeight: 500,
+              textDecoration: 'underline',
+              padding: 0,
+              margin: 0,
+              minWidth: 'unset',
+              '&:hover': {
+                textDecoration: 'none',
+                background: 'transparent',
+              },
+            },
+          },
+        },
+        defaultProps: {
+          iconMapping: {
+            error: (
+              <SvgIcon color="error">
+                <ExclamationIcon />
+              </SvgIcon>
+            ),
+            info: (
+              <SvgIcon color="info">
+                <InformationCircleIcon />
+              </SvgIcon>
+            ),
+            success: (
+              <SvgIcon color="success">
+                <CheckCircleIcon />
+              </SvgIcon>
+            ),
+            warning: (
+              <SvgIcon color="warning">
+                <ExclamationCircleIcon />
+              </SvgIcon>
+            ),
+          },
+        },
+        variants: [
+          {
+            props: { severity: 'error' },
+            style: {
+              color: theme.palette.error['100'],
+              background: theme.palette.error['200'],
+              a: {
+                color: theme.palette.error['100'],
+              },
+              '.MuiButton-text': {
+                color: theme.palette.error['100'],
+              },
+            },
+          },
+          {
+            props: { severity: 'info' },
+            style: {
+              color: theme.palette.info['100'],
+              background: theme.palette.info['200'],
+              a: {
+                color: theme.palette.info['100'],
+              },
+              '.MuiButton-text': {
+                color: theme.palette.info['100'],
+              },
+            },
+          },
+          {
+            props: { severity: 'success' },
+            style: {
+              color: theme.palette.success['100'],
+              background: theme.palette.success['200'],
+              a: {
+                color: theme.palette.success['100'],
+              },
+              '.MuiButton-text': {
+                color: theme.palette.success['100'],
+              },
+            },
+          },
+          {
+            props: { severity: 'warning' },
+            style: {
+              color: theme.palette.warning['100'],
+              background: theme.palette.warning['200'],
+              a: {
+                color: theme.palette.warning['100'],
+              },
+              '.MuiButton-text': {
+                color: theme.palette.warning['100'],
+              },
+            },
+          },
+        ],
+      },
       MuiCssBaseline: {
         styleOverrides: {
           body: {
@@ -505,6 +790,40 @@ export function getThemedComponents(theme: Theme) {
           },
         },
       },
+      MuiSvgIcon: {
+        styleOverrides: {
+          colorPrimary: {
+            color: theme.palette.primary.light,
+          },
+        },
+      },
+      MuiSelect: {
+        defaultProps: {
+          IconComponent: (props) => (
+            <SvgIcon sx={{ fontSize: '16px' }} {...props}>
+              <ChevronDownIcon />
+            </SvgIcon>
+          ),
+        },
+        styleOverrides: {
+          outlined: {
+            backgroundColor: theme.palette.background.surface,
+            ...theme.typography.buttonM,
+            padding: '6px 12px',
+            color: theme.palette.primary.light,
+          },
+        },
+      },
+      MuiLinearProgress: {
+        styleOverrides: {
+          bar1Indeterminate: {
+            background: theme.palette.gradients.aaveGradient,
+          },
+          bar2Indeterminate: {
+            background: theme.palette.gradients.aaveGradient,
+          },
+        },
+      },
     },
-  };
+  } as ThemeOptions;
 }

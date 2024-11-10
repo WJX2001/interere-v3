@@ -28,8 +28,7 @@ const CoinSwap = () => {
         >
           <Paper
             sx={(theme) => ({
-              backgroundColor: '#292e40',
-              maxWidth: '380px',
+              // maxWidth: '380px',
               padding: theme.spacing(6),
             })}
           >
