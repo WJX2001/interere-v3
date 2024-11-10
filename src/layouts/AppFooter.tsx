@@ -36,7 +36,6 @@ const FOOTER_ICONS = [
     icon: <XIcon fontSize="small" />,
     title: 'Lens',
   },
-  
 ];
 
 const AppFooter = () => {
@@ -61,6 +60,7 @@ const AppFooter = () => {
         {FOOTER_LINKS.map((link) => (
           <Link
             underline="none"
+            href={link.href}
             key={link.key}
             sx={(theme) => ({
               color: theme.palette.text.muted,
@@ -85,11 +85,22 @@ const AppFooter = () => {
         }}
       >
         {FOOTER_ICONS.map((icon) => (
-          <Link href={icon.href} key={icon.title} target="_blank">
+          <Link
+            href={icon.href}
+            key={icon.title}
+            target="_blank"
+            sx={(theme) => ({
+              color: theme.palette.text.muted,
+              '&:hover': {
+                color: theme.palette.text.primary,
+              },
+              display: 'flex',
+            })}
+          >
             <SvgIcon
               sx={{
                 fontSize: '16px',
-                color: '#8E92A3',
+                
               }}
             >
               {icon.icon}

@@ -1,8 +1,13 @@
 import { MENUITEMS } from '@/constants';
 import { Button, List, ListItem, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import clsx from 'clsx';
 const NavItems = () => {
+
+  const navigate = useNavigate();
+  const locationInfo = useLocation()
+  console.log(locationInfo.pathname === '/swap')
   return (
     <List
       sx={{
@@ -21,10 +26,15 @@ const NavItems = () => {
           key={index}
         >
           <Button
+             onClick={() => {
+              navigate(item.url)
+             }}
+             className={clsx({ 'active': location.pathname === item.url })}
+            // href={item.url}
             sx={(theme) => ({
               color: '#F1F1F3',
               p: '6px 8px',
-              fontSize:'14px',
+              fontSize: '14px',
               position: 'relative',
               '.active&:after, &:hover&:after': {
                 transform: 'scaleX(1)',

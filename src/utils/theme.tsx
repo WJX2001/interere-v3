@@ -6,7 +6,6 @@ const {
   typography: { pxToRem },
 } = theme;
 
-
 interface TypographyCustomVariants {
   display1: React.CSSProperties;
   subheader1: React.CSSProperties;
@@ -27,6 +26,9 @@ interface TypographyCustomVariants {
   secondary12: React.CSSProperties;
 }
 declare module '@mui/material/styles/createPalette' {
+  interface TypeText {
+    muted: string;
+  }
   interface TypeBackground {
     default: string;
     paper: string;

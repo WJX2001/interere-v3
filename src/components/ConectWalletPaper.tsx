@@ -1,6 +1,6 @@
 import { Box, Paper, PaperProps, Typography } from '@mui/material';
 import React, { ReactNode } from 'react';
-import LandingGhost from '/public/resting-gho-hat-purple.svg';
+import LandingGhost from '@/assets/resting-gho-hat-purple.svg'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 interface ConnectWalletPaperProps extends PaperProps {
   description?: ReactNode;
