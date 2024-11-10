@@ -48,6 +48,38 @@ declare module '@mui/material/styles/createPalette' {
     };
   }
 }
+
+// Update the Typography's variant prop options
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    display1: true;
+    subheader1: true;
+    subheader2: true;
+    description: true;
+    buttonL: true;
+    buttonM: true;
+    buttonS: true;
+    helperText: true;
+    tooltip: true;
+    main21: true;
+    secondary21: true;
+    main16: true;
+    secondary16: true;
+    main14: true;
+    secondary14: true;
+    main12: true;
+    secondary12: true;
+    h5: false;
+    h6: false;
+    subtitle1: false;
+    subtitle2: false;
+    body1: false;
+    body2: false;
+    button: false;
+    overline: false;
+  }
+}
+
 declare module '@mui/material/styles' {
   interface TypographyVariants extends TypographyCustomVariants {}
 

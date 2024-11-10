@@ -13,6 +13,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     }}>
       <AppHeader />
       <Box
+      className='wjx'
         component="main"
         sx={{
           display: 'flex',
