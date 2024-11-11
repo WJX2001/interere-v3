@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
-
 const CoinSwap = () => {
   const { isConnected } = useAccount();
   const currentChainId = useChainId();
