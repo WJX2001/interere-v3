@@ -14,10 +14,10 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useAccount, useChainId } from 'wagmi';
-const CoinSwap = () => {
+const CoinSwap = ({network}) => {
+  console.log(network,'来了啊')
   const { isConnected } = useAccount();
   const currentChainId = useChainId();
-  console.log(currentChainId, 'lop');
   const [inputAmount, setInputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState(COINLISTS[0]);
   const [selectedOutputToken, setSelectedOutputToken] = useState(COINLISTS[3]);

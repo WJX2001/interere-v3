@@ -6,7 +6,6 @@ interface ContentContainerProps {
 }
 
 export const ContentContainer = ({ children }: ContentContainerProps) => {
-  console.log(333333)
   return (
     <Box
       sx={{

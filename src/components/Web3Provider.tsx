@@ -1,4 +1,10 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   useAccount,
   useChainId,
@@ -12,6 +18,9 @@ import routerAbi from '@/build/UniswapV2Router02.json';
 import { AbiType } from '@/types';
 import { NetWorkList } from '@/constants/network';
 import ChangeNetWorkPaper from './ChangeNetWorkPaper';
+import { COINLISTS } from '@/constants';
+import { Address } from 'viem';
+
 interface Props {
   render: (network: {}) => ReactNode;
 }
@@ -19,19 +28,27 @@ interface Props {
 const Web3Provider: React.FC<Props> = (props) => {
   const { render } = props;
   const { isConnected, address, chainId } = useAccount();
-  const [networkInfo, setNetworkInfo] = useState({});
-  // const routerAddress = useGetRouter()
-  // console.log(routerAddress?.read.WETH(),'222222')
-  // console.log(routerAddress)
+  const routeContract = useGetRouter();
 
-  // const getWETHAddress = async() => {
-  //   const data = await routerAddress?.read.WETH()
-  //   console.log(data,'wjx')
-  // }
+  const coinListRef = useRef(COINLISTS);
+  const factoryRef = useRef<Address>();
 
-  // useEffect(() => {
-  //   getWETHAddress()
-  // },[routerAddress])
+  const getRouteInstance = useCallback(async () => {
+    if (routeContract) {
+      // get weth address from router
+      const wethAddress = (await routeContract?.read.WETH()) as Address;
+      coinListRef.current[2].address = wethAddress;
+      // get factory address from router
+      const factory = (await routeContract?.read.factory()) as Address;
+      // Get factory instance
+      // factoryRef.current = await ;
+    }
+  }, [routeContract]);
+
+  useEffect(() => {
+    getRouteInstance();
+  }, [getRouteInstance]);
+
   console.log(chainId, '312');
   return (
     <>
@@ -45,9 +62,12 @@ const Web3Provider: React.FC<Props> = (props) => {
           <ChangeNetWorkPaper />
         </ContentContainer>
       )}
-      {isConnected && NetWorkList.includes(chainId as number) &&
+      {isConnected &&
         NetWorkList.includes(chainId as number) &&
-        render(networkInfo)}
+        NetWorkList.includes(chainId as number) &&
+        render({
+          wethAddress: coinListRef?.current,
+        })}
     </>
   );
 };

@@ -1,13 +1,11 @@
 import { MENUITEMS } from '@/constants';
 import { Button, List, ListItem, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 const NavItems = () => {
 
   const navigate = useNavigate();
-  const locationInfo = useLocation()
-  console.log(locationInfo.pathname === '/swap')
   return (
     <List
       sx={{

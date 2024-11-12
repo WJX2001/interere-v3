@@ -1,4 +1,4 @@
-import { handleGetContract } from '@/utils/contractHelper';
+import { getContract } from '@/utils/contractHelper';
 import { useMemo } from 'react';
 import { Abi, Address } from 'viem';
 import { useChainId, useWalletClient } from 'wagmi';
@@ -15,18 +15,15 @@ export function useContract<TAbi extends Abi>(
   const currentChainId = useChainId();
   const chainId = options?.chainId || currentChainId;
   const { data: walletClient } = useWalletClient();
-  const contractInstance = useMemo(() => {
+
+  return useMemo(() => {
     if (!addressOrAddressMap || !abi || !chainId) return null;
     let address: Address | undefined;
-    if (typeof addressOrAddressMap === 'string') {
-      address = addressOrAddressMap;
-    } else {
-      address = addressOrAddressMap[chainId];
-    }
-
+    if (typeof addressOrAddressMap === 'string') address = addressOrAddressMap;
+    else address = addressOrAddressMap[chainId];
     if (!address) return null;
     try {
-      return handleGetContract({
+      return getContract({
         abi,
         address,
         chainId,
@@ -37,5 +34,4 @@ export function useContract<TAbi extends Abi>(
       return null;
     }
   }, [addressOrAddressMap, abi, chainId, walletClient]);
-  return contractInstance;
 }

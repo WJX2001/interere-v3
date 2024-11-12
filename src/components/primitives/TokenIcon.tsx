@@ -12,8 +12,6 @@ export function ExternalTokenIcon({
   logoURI,
   ...rest
 }: ExternalTokenIconProps) {
-
-  console.log(symbol?.toLowerCase())
   const [tokenSymbol, setTokenSymbol] = useState(symbol?.toLowerCase());
   return (
     <Icon
