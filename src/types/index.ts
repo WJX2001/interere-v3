@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export interface MenuItemsTypes {
   title: string;
   url: string;
@@ -17,3 +19,7 @@ export interface TokenInfoTypes {
   address: string;
   logoURI: string;
 }
+
+export type AbiType = {
+  abi: Abi;
+};

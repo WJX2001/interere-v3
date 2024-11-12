@@ -15,7 +15,6 @@ export function useContract<TAbi extends Abi>(
   const currentChainId = useChainId();
   const chainId = options?.chainId || currentChainId;
   const { data: walletClient } = useWalletClient();
-
   const contractInstance = useMemo(() => {
     if (!addressOrAddressMap || !abi || !chainId) return null;
     let address: Address | undefined;

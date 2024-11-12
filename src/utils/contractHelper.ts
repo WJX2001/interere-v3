@@ -1,4 +1,4 @@
-import { defaultChainId } from '@/wagmi';
+
 import {
   Abi,
   Address,
@@ -8,6 +8,7 @@ import {
   WalletClient,
 } from 'viem';
 import { viemClients } from './viem';
+import { defaultChainId } from '@/constants/network';
 
 export const handleGetContract = <
   TAbi extends Abi | readonly unknown[],

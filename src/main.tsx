@@ -10,6 +10,7 @@ import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import AppGlobalStyles from './layouts/AppGlobalStyles.tsx';
 import { Config } from './wagmi.ts';
 import merge from 'lodash.merge';
+import MainLayout from './layouts/MainLayout.tsx';
 
 const queryClient = new QueryClient();
 const myTheme = merge(darkTheme(), {
@@ -23,17 +24,19 @@ const myTheme = merge(darkTheme(), {
 });
 
 createRoot(document.getElementById('root')!).render(
-    <BrowserRouter>
-      <StrictMode>
-        <WagmiProvider config={Config}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={myTheme} locale="en">
-              <AppGlobalStyles>
+  <BrowserRouter>
+    <StrictMode>
+      <WagmiProvider config={Config}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitProvider theme={myTheme} locale="en">
+            <AppGlobalStyles>
+              <MainLayout>
                 <App />
-              </AppGlobalStyles>
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </StrictMode>
-    </BrowserRouter>
+              </MainLayout>
+            </AppGlobalStyles>
+          </RainbowKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </StrictMode>
+  </BrowserRouter>,
 );

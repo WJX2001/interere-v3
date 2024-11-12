@@ -48,97 +48,91 @@ const CoinSwap = () => {
 
   return (
     <>
-      {isConnected ? (
-        <Box
+      <Box
+        sx={(theme) => ({
+          paddingTop: theme.spacing(12),
+          display: 'flex', // 启用弹性布局
+          justifyContent: 'center', // 水平居中
+          alignItems: 'center', // 垂直居中
+        })}
+      >
+        <Paper
           sx={(theme) => ({
-            paddingTop: theme.spacing(12),
-            display: 'flex', // 启用弹性布局
-            justifyContent: 'center', // 水平居中
-            alignItems: 'center', // 垂直居中
+            // maxWidth: '380px',
+            padding: theme.spacing(6),
+            maxWidth: { xs: '359px', xsm: '420px' },
+            maxHeight: 'calc(100vh - 20px)',
+            overflowY: 'auto',
+            width: '100%',
           })}
         >
-          <Paper
-            sx={(theme) => ({
-              // maxWidth: '380px',
-              padding: theme.spacing(6),
-              maxWidth: { xs: '359px', xsm: '420px' },
-              maxHeight: 'calc(100vh - 20px)',
-              overflowY: 'auto',
-              width: '100%',
-            })}
+          <Typography variant="h2" sx={{ mb: 6 }}>
+            Switch tokens
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '15px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
           >
-            <Typography variant="h2" sx={{ mb: 6 }}>
-              Switch tokens
-            </Typography>
-            <Box
+            <SwitchAssetInput
+              value={inputAmount}
+              chainId={currentChainId}
+              selectedAsset={selectedInputToken}
+              assets={COINLISTS?.filter(
+                (token) => token.address !== selectedOutputToken.address,
+              )}
+              onSelect={handleSelectedInputToken}
+              onChange={handleInputChange}
+            />
+            <IconButton
+              onClick={onSwitchReserves}
               sx={{
-                display: 'flex',
-                gap: '15px',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
+                border: '1px solid',
+                borderColor: 'divider',
+                position: 'absolute',
+                backgroundColor: 'background.paper',
+                '&:hover': { backgroundColor: 'background.surface' },
               }}
             >
-              <SwitchAssetInput
-                value={inputAmount}
-                chainId={currentChainId}
-                selectedAsset={selectedInputToken}
-                assets={COINLISTS?.filter(
-                  (token) => token.address !== selectedOutputToken.address,
-                )}
-                onSelect={handleSelectedInputToken}
-                onChange={handleInputChange}
-              />
-              <IconButton
-                onClick={onSwitchReserves}
+              <SvgIcon
                 sx={{
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  position: 'absolute',
-                  backgroundColor: 'background.paper',
-                  '&:hover': { backgroundColor: 'background.surface' },
+                  color: 'primary.main',
+                  fontSize: '18px',
                 }}
               >
-                <SvgIcon
-                  sx={{
-                    color: 'primary.main',
-                    fontSize: '18px',
-                  }}
-                >
-                  <SwitchVerticalIcon />
-                </SvgIcon>
-              </IconButton>
-              <SwitchAssetInput
-                value=""
-                chainId={currentChainId}
-                selectedAsset={selectedOutputToken}
-                disableInput={true}
-                assets={COINLISTS?.filter(
-                  (token) => token.address !== selectedInputToken.address,
-                )}
-                onSelect={handleSelectedOutputToken}
-              />
-            </Box>
-            <Box
-              sx={{
-                marginTop: '48px',
-                display: 'flex',
-                alignContent: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Button variant="contained" sx={{ width: '100%' }}>
-                Switch
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      ) : (
-        <ContentContainer>
-          <ConectWalletPaper />
-        </ContentContainer>
-      )}
+                <SwitchVerticalIcon />
+              </SvgIcon>
+            </IconButton>
+            <SwitchAssetInput
+              value=""
+              chainId={currentChainId}
+              selectedAsset={selectedOutputToken}
+              disableInput={true}
+              assets={COINLISTS?.filter(
+                (token) => token.address !== selectedInputToken.address,
+              )}
+              onSelect={handleSelectedOutputToken}
+            />
+          </Box>
+          <Box
+            sx={{
+              marginTop: '48px',
+              display: 'flex',
+              alignContent: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Button variant="contained" sx={{ width: '100%' }}>
+              Switch
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
     </>
   );
 };

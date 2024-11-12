@@ -10,9 +10,9 @@ import {
 
 export const Config = getDefaultConfig({
   appName: 'RainbowKit demo',
-  projectId: 'YOUR_PROJECT_ID',
+  projectId: import.meta.env.VITE_PROJECT_ID,
   // chains: [mainnet, polygon, optimism, arbitrum, base],
   chains: [modeTestnet, mainnet, polygon, optimism, arbitrum, base],
 });
 
-export const defaultChainId: number = modeTestnet.id;
+
