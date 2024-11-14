@@ -13,13 +13,13 @@ import {
 } from 'wagmi';
 import { ContentContainer } from './ContentContainer';
 import ConectWalletPaper from './ConectWalletPaper';
-import { useGetRouter } from '@/hooks/ethereumInfoHooks';
+import { useGetFactory, useGetRouter } from '@/hooks/ethereumInfoHooks';
 import routerAbi from '@/build/UniswapV2Router02.json';
 import { AbiType } from '@/types';
 import { NetWorkList } from '@/constants/network';
 import ChangeNetWorkPaper from './ChangeNetWorkPaper';
 import { COINLISTS } from '@/constants';
-import { Address } from 'viem';
+import { Address, zeroAddress } from 'viem';
 
 interface Props {
   render: (network: {}) => ReactNode;
@@ -29,21 +29,30 @@ const Web3Provider: React.FC<Props> = (props) => {
   const { render } = props;
   const { isConnected, address, chainId } = useAccount();
   const routeContract = useGetRouter();
+  const [factoryAddress, setFactoryAddress] = useState<Address>(zeroAddress);
+  const factoryInsance = useGetFactory(factoryAddress);
 
-  const coinListRef = useRef(COINLISTS);
-  const factoryRef = useRef<Address>();
+  const network = Object.create({});
+  network.weth = useRef(null);
+  network.factory = useRef(null);
+  network.coins = COINLISTS;
+  network.router = routeContract;
+  network.factory = factoryInsance;
+  network.chainId = chainId;
 
   const getRouteInstance = useCallback(async () => {
     if (routeContract) {
       // get weth address from router
       const wethAddress = (await routeContract?.read.WETH()) as Address;
-      coinListRef.current[2].address = wethAddress;
+      network.weth = wethAddress;
+      network.coins[2].address = wethAddress;
       // get factory address from router
-      const factory = (await routeContract?.read.factory()) as Address;
+      const factory_address = (await routeContract?.read.factory()) as Address;
+      setFactoryAddress(factory_address);
       // Get factory instance
       // factoryRef.current = await ;
     }
-  }, [routeContract]);
+  }, [routeContract, network]);
 
   useEffect(() => {
     getRouteInstance();
@@ -64,10 +73,7 @@ const Web3Provider: React.FC<Props> = (props) => {
       )}
       {isConnected &&
         NetWorkList.includes(chainId as number) &&
-        NetWorkList.includes(chainId as number) &&
-        render({
-          wethAddress: coinListRef?.current,
-        })}
+        render(network)}
     </>
   );
 };
