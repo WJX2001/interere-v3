@@ -12,5 +12,5 @@ export const ChainId = {
 };
 
 export const routerAddress = new Map();
-// MoDexCoinRouter
+// CoinRouter
 routerAddress.set(ChainId.MAINNET, "0x10034BC392b3313E2EdcafD56beF773F0F155C5F");

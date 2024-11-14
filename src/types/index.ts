@@ -1,4 +1,4 @@
-import { Abi } from "viem";
+import { Abi, Address } from 'viem';
 
 export interface MenuItemsTypes {
   title: string;
@@ -22,4 +22,10 @@ export interface TokenInfoTypes {
 
 export type AbiType = {
   abi: Abi;
+};
+
+export type BalanceAndSymbol = {
+  address: string;
+  symbol: string;
+  balance: string;
 };

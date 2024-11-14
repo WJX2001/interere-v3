@@ -1,18 +1,23 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
-import { TokenInfoTypes } from '@/types';
+import { BalanceAndSymbol, CoinListTypes, TokenInfoTypes } from '@/types';
+import { getBalanceAndSymbol } from '@/utils/ethereumInfoFuntion';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
   Button,
+  Divider,
+  Grid2,
   IconButton,
   Paper,
   SvgIcon,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
-import { useBalance, useChainId } from 'wagmi';
+import { Contract } from 'ethers';
+import { useEffect, useState } from 'react';
+import { Address } from 'viem';
+import { useChainId } from 'wagmi';
 interface Props {
   network: NetWorkType;
 }
@@ -20,8 +25,23 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   console.log(network, '来了啊');
   const currentChainId = useChainId();
   const [inputAmount, setInputAmount] = useState('');
-  const [selectedInputToken, setSelectedInputToken] = useState(COINLISTS[0]);
-  const [selectedOutputToken, setSelectedOutputToken] = useState(COINLISTS[3]);
+  const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
+    network.coins[0],
+  );
+  const [selectedOutputToken, setSelectedOutputToken] = useState<CoinListTypes>(
+    network.coins[3],
+  );
+
+  const [coin1, setCoin1] = useState<{
+    address: string | undefined;
+    symbol: string | undefined;
+    balance: string | undefined;
+  }>({
+    address: undefined,
+    symbol: undefined,
+    balance: undefined,
+  });
+
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
   };
@@ -30,13 +50,38 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     setSelectedOutputToken(token);
   };
 
-  const handleInputChange = (value: string) => {
+  const handleInputChange = async (value: string) => {
     if (value === '-1') {
       // setInputAmount('')
       // TODO: 这里需要补充余额逻辑和防抖逻辑
     } else {
       setInputAmount(value);
+      const selectItem = network.coins.find(
+        (item) => item.address === selectedInputToken.address,
+      );
+      // @ts-expect-error todo type error
+      const data = await handleGetBlanceAndSymbol(selectItem?.address);
+      setCoin1({
+        address: selectItem?.address,
+        symbol: data?.symbol,
+        balance: data?.balance,
+      });
     }
+  };
+
+  const handleGetBlanceAndSymbol = async (
+    address: Address | undefined,
+  ): Promise<BalanceAndSymbol> => {
+    const balanceData = await getBalanceAndSymbol(
+      network.account,
+      address,
+      network.provider,
+      network.signer,
+      network.wethAddress,
+      network.coins,
+    );
+    // console.log(data, 'data');
+    return balanceData as BalanceAndSymbol;
   };
 
   // switch reverse
@@ -120,6 +165,27 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               onSelect={handleSelectedOutputToken}
             />
           </Box>
+
+          {/* <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: '15px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 4,
+              }}
+            >
+              <Typography variant="h4" sx={{ mt: 6 }}>
+                Balance
+              </Typography>
+            </Box>
+            <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
+              <Grid2 size={6}>97.000000 GLD</Grid2>
+              <Grid2 size={6}>305.98500 USDT</Grid2>
+            </Grid2>
+          </Box> */}
           <Box
             sx={{
               marginTop: '48px',

@@ -36,7 +36,7 @@ interface AssetInputProps {
 }
 
 const SwitchAssetInput = ({
-  value = '',
+  value,
   assets,
   chainId,
   disabled,
@@ -83,6 +83,7 @@ const SwitchAssetInput = ({
           sx={{ flex: 1 }}
           placeholder="0.00"
           autoFocus
+          value={value}
           disabled={disabled || disableInput}
           onChange={(e) => {
             if (!onChange) return;

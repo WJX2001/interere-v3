@@ -29,6 +29,11 @@ export type NetWorkType = {
   factory: unknown;
   router: unknown;
   coins: CoinListTypes[];
+  provider: ethers.providers.Web3Provider;
+  signer: ethers.providers.JsonRpcSigner | null;
+  account: Address | null;
+  chainID: number | null;
+  wethAddress: Address | null;
 };
 
 const Web3Provider: React.FC<Props> = (props) => {
@@ -44,6 +49,7 @@ const Web3Provider: React.FC<Props> = (props) => {
     signer: null as ethers.providers.JsonRpcSigner | null,
     account: null as Address | null,
     chainID: null as number | null,
+    wethAddress: null as Address | null
   });
   const backgroundListener = useRef(null as unknown);
 
@@ -67,10 +73,12 @@ const Web3Provider: React.FC<Props> = (props) => {
           await (network.current.router as Contract)
             .WETH()
             .then((wethAddress: Address) => {
+              network.current.wethAddress = wethAddress
               network.current.weth = getWeth(
                 wethAddress,
                 network.current.signer as ethers.providers.JsonRpcSigner,
               );
+              
               // Set the value of the weth address in the default coins array
               network.current.coins[2].address = wethAddress;
             });

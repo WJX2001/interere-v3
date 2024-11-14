@@ -1,20 +1,21 @@
 import { CoinListTypes } from '@/types';
 import { ChainId } from './chain';
-
+import USDTIMG from '@/assets/USDT.png';
+import PORKETIMG from '@/assets/PocketImg.png';
+import GOLDIMG from '@/assets/GOLD.png';
+import DMDIMG from '@/assets/DMDIMG.png';
 export const MODECOINSLIST: CoinListTypes[] = [
   {
     name: 'Tether USD',
     symbol: 'USDT',
     address: '0xA46Ba1732444DF2b3c0c4F98186E234B69e7D215',
-    logoURI:
-      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+    logoURI: USDTIMG,
   },
   {
     name: 'Pocket Index',
     symbol: 'PocketIndex',
     address: '0x111F608A01119707Dc70032B7738Af8B5131E949',
-    logoURI:
-      'https://coin-images.coingecko.com/coins/images/31696/large/POKT.jpg?1703257336',
+    logoURI: PORKETIMG,
   },
   {
     name: 'Ether',
@@ -41,8 +42,7 @@ export const MODECOINSLIST: CoinListTypes[] = [
     name: 'Gold',
     symbol: 'GLD',
     address: '0xaa2A46a015dbA96Be4D24F1637002Ff1c8762b29',
-    logoURI:
-      'https://assets.coingecko.com/coins/images/18125/thumb/lpgblc4h_400x400.jpg?1630570955',
+    logoURI: GOLDIMG,
   },
   {
     name: 'Pearl',
@@ -55,8 +55,7 @@ export const MODECOINSLIST: CoinListTypes[] = [
     name: 'Diamond',
     symbol: 'DMD',
     address: '0x66871BD88bddC937c8Da5Fb8fc3Ef7ab09B2336a',
-    logoURI:
-      'https://assets.coingecko.com/coins/images/24570/large/FCD_small_200.png?1648193725',
+    logoURI: DMDIMG,
   },
 ];
 
