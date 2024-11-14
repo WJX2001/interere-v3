@@ -7,9 +7,22 @@ import { NetWorkList } from '@/constants/network';
 import ChangeNetWorkPaper from './ChangeNetWorkPaper';
 import { COINLISTS } from '@/constants';
 import { Address, zeroAddress } from 'viem';
+import { CoinListTypes } from '@/types';
 
 interface Props {
-  render: (network: {}) => ReactNode;
+  render: (network: {
+    weth: Address | null;
+    factory: ReturnType<typeof useGetFactory>;
+    router: ReturnType<typeof useGetRouter>;
+    coins: CoinListTypes[]
+  }) => ReactNode;
+}
+
+export type NetWorkType = {
+  weth: Address | null;
+  factory: ReturnType<typeof useGetFactory>;
+  router: ReturnType<typeof useGetRouter>;
+  coins: CoinListTypes[]
 }
 
 const Web3Provider: React.FC<Props> = (props) => {

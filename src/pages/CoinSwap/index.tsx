@@ -1,5 +1,5 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
-import { Network } from '@/components/Web3Provider';
+import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
 import { TokenInfoTypes } from '@/types';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import { useChainId } from 'wagmi';
 interface Props {
-  network: Network;
+  network: NetWorkType;
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
   console.log(network, '来了啊');
