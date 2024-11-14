@@ -1,6 +1,5 @@
-import ConectWalletPaper from '@/components/ConectWalletPaper';
-import { ContentContainer } from '@/components/ContentContainer';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
+import { Network } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
 import { TokenInfoTypes } from '@/types';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
@@ -12,11 +11,13 @@ import {
   SvgIcon,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
-import { useAccount, useChainId } from 'wagmi';
-const CoinSwap = ({network}) => {
-  console.log(network,'来了啊')
-  const { isConnected } = useAccount();
+import { useState } from 'react';
+import { useChainId } from 'wagmi';
+interface Props {
+  network: Network;
+}
+const CoinSwap: React.FC<Props> = ({ network }) => {
+  console.log(network, '来了啊');
   const currentChainId = useChainId();
   const [inputAmount, setInputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState(COINLISTS[0]);

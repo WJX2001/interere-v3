@@ -1,21 +1,8 @@
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import {
-  useAccount,
-  useChainId,
-  useReadContract,
-  useWalletClient,
-} from 'wagmi';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { useAccount } from 'wagmi';
 import { ContentContainer } from './ContentContainer';
 import ConectWalletPaper from './ConectWalletPaper';
 import { useGetFactory, useGetRouter } from '@/hooks/ethereumInfoHooks';
-import routerAbi from '@/build/UniswapV2Router02.json';
-import { AbiType } from '@/types';
 import { NetWorkList } from '@/constants/network';
 import ChangeNetWorkPaper from './ChangeNetWorkPaper';
 import { COINLISTS } from '@/constants';
@@ -27,38 +14,40 @@ interface Props {
 
 const Web3Provider: React.FC<Props> = (props) => {
   const { render } = props;
-  const { isConnected, address, chainId } = useAccount();
+  const { isConnected, chainId } = useAccount();
   const routeContract = useGetRouter();
+
   const [factoryAddress, setFactoryAddress] = useState<Address>(zeroAddress);
-  const factoryInsance = useGetFactory(factoryAddress);
+  const factoryInstance = useGetFactory(factoryAddress);
 
-  const network = Object.create({});
-  network.weth = useRef(null);
-  network.factory = useRef(null);
-  network.coins = COINLISTS;
-  network.router = routeContract;
-  network.factory = factoryInsance;
-  network.chainId = chainId;
-
-  const getRouteInstance = useCallback(async () => {
-    if (routeContract) {
-      // get weth address from router
-      const wethAddress = (await routeContract?.read.WETH()) as Address;
-      network.weth = wethAddress;
-      network.coins[2].address = wethAddress;
-      // get factory address from router
-      const factory_address = (await routeContract?.read.factory()) as Address;
-      setFactoryAddress(factory_address);
-      // Get factory instance
-      // factoryRef.current = await ;
-    }
-  }, [routeContract, network]);
+  const network = useRef({
+    weth: null as Address | null,
+    factory: factoryInstance,
+    router: routeContract,
+    coins: [...COINLISTS],
+  });
 
   useEffect(() => {
-    getRouteInstance();
-  }, [getRouteInstance]);
+    const fetchRouteData = async () => {
+      if (routeContract) {
+        try {
+          // Get WETH address and update network ref
+          const wethAddress = (await routeContract.read.WETH()) as Address;
+          network.current.weth = wethAddress;
+          network.current.coins[2].address = wethAddress;
 
-  console.log(chainId, '312');
+          // Get factory address and update state
+          const factory_address = (await routeContract.read.factory()) as Address;
+          setFactoryAddress(factory_address);
+        } catch (error) {
+          console.error("Error fetching route data:", error);
+        }
+      }
+    };
+
+    fetchRouteData();
+  }, [routeContract]);
+
   return (
     <>
       {!isConnected && (
@@ -73,7 +62,7 @@ const Web3Provider: React.FC<Props> = (props) => {
       )}
       {isConnected &&
         NetWorkList.includes(chainId as number) &&
-        render(network)}
+        render(network.current)}
     </>
   );
 };
