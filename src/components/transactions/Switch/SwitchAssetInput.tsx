@@ -14,7 +14,7 @@ import NumberFormatCustom from './NumberFormatCustom';
 import { XCircleIcon } from '@heroicons/react/solid';
 import { ExternalTokenIcon } from '@/components/primitives/TokenIcon';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
 import { COINLISTS, COMMON_SWAPS } from '@/constants';
 import { CoinListTypes, TokenInfoTypes } from '@/types';

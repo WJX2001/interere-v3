@@ -1,6 +1,7 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
+import { useERCContract } from '@/hooks/ethereumInfoHooks';
 import { BalanceAndSymbol, CoinListTypes, TokenInfoTypes } from '@/types';
 import { getBalanceAndSymbol } from '@/utils/ethereumInfoFuntion';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
@@ -22,7 +23,6 @@ interface Props {
   network: NetWorkType;
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
-  console.log(network, '来了啊');
   const currentChainId = useChainId();
   const [inputAmount, setInputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
@@ -42,37 +42,43 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     balance: undefined,
   });
 
+  const [coin2, setCoin2] = useState<{
+    address: string | undefined;
+    symbol: string | undefined;
+    balance: string | undefined;
+  }>({
+    address: undefined,
+    symbol: undefined,
+    balance: undefined,
+  });
+
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
+    handleGetInputBlanceAndSymbol(token.address)
   };
 
   const handleSelectedOutputToken = (token: TokenInfoTypes) => {
     setSelectedOutputToken(token);
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      handleGetInputBlanceAndSymbol(selectedInputToken.address)
+      handleGetOutputBlanceAndSymbol(selectedOutputToken.address)
+    },1000)
+  },[])
+
   const handleInputChange = async (value: string) => {
     if (value === '-1') {
-      // setInputAmount('')
+      setInputAmount('')
       // TODO: 这里需要补充余额逻辑和防抖逻辑
     } else {
       setInputAmount(value);
-      const selectItem = network.coins.find(
-        (item) => item.address === selectedInputToken.address,
-      );
-      // @ts-expect-error todo type error
-      const data = await handleGetBlanceAndSymbol(selectItem?.address);
-      setCoin1({
-        address: selectItem?.address,
-        symbol: data?.symbol,
-        balance: data?.balance,
-      });
     }
   };
 
-  const handleGetBlanceAndSymbol = async (
-    address: Address | undefined,
-  ): Promise<BalanceAndSymbol> => {
-    const balanceData = await getBalanceAndSymbol(
+  const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
+    const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
       network.account,
       address,
       network.provider,
@@ -80,9 +86,31 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       network.wethAddress,
       network.coins,
     );
-    // console.log(data, 'data');
-    return balanceData as BalanceAndSymbol;
+    console.log('balanceData', balanceData);
+    setCoin1({
+      address: address,
+      symbol: balanceData?.symbol,
+      balance: balanceData?.balance,
+    });
   };
+
+  const handleGetOutputBlanceAndSymbol = async (address: string | undefined) => {
+    const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
+      network.account,
+      address,
+      network.provider,
+      network.signer,
+      network.wethAddress,
+      network.coins,
+    );
+    console.log('balanceData', balanceData);
+    setCoin2({
+      address: address,
+      symbol: balanceData?.symbol,
+      balance: balanceData?.balance,
+    });
+  };
+
 
   // switch reverse
   const onSwitchReserves = () => {
