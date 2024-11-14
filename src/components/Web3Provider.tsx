@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 import { ContentContainer } from './ContentContainer';
 import ConectWalletPaper from './ConectWalletPaper';
 import { useGetFactory, useGetRouter } from '@/hooks/ethereumInfoHooks';
@@ -14,7 +14,7 @@ interface Props {
     weth: Address | null;
     factory: ReturnType<typeof useGetFactory>;
     router: ReturnType<typeof useGetRouter>;
-    coins: CoinListTypes[]
+    coins: CoinListTypes[];
   }) => ReactNode;
 }
 
@@ -22,14 +22,13 @@ export type NetWorkType = {
   weth: Address | null;
   factory: ReturnType<typeof useGetFactory>;
   router: ReturnType<typeof useGetRouter>;
-  coins: CoinListTypes[]
-}
+  coins: CoinListTypes[];
+};
 
 const Web3Provider: React.FC<Props> = (props) => {
   const { render } = props;
   const { isConnected, chainId } = useAccount();
   const routeContract = useGetRouter();
-
   const [factoryAddress, setFactoryAddress] = useState<Address>(zeroAddress);
   const factoryInstance = useGetFactory(factoryAddress);
 
@@ -48,12 +47,12 @@ const Web3Provider: React.FC<Props> = (props) => {
           const wethAddress = (await routeContract.read.WETH()) as Address;
           network.current.weth = wethAddress;
           network.current.coins[2].address = wethAddress;
-
           // Get factory address and update state
-          const factory_address = (await routeContract.read.factory()) as Address;
+          const factory_address =
+            (await routeContract.read.factory()) as Address;
           setFactoryAddress(factory_address);
         } catch (error) {
-          console.error("Error fetching route data:", error);
+          console.error('Error fetching route data:', error);
         }
       }
     };

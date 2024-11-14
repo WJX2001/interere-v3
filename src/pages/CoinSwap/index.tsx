@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useChainId } from 'wagmi';
+import { useBalance, useChainId } from 'wagmi';
 interface Props {
   network: NetWorkType;
 }
