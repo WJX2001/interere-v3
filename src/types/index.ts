@@ -11,6 +11,7 @@ export interface CoinListTypes {
   symbol: string;
   address: string;
   logoURI: string;
+  balance?: number;
 }
 
 export interface TokenInfoTypes {
@@ -18,6 +19,7 @@ export interface TokenInfoTypes {
   symbol: string;
   address: string;
   logoURI: string;
+  balance?: string;
 }
 
 export type AbiType = {

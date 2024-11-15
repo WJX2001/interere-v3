@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
 import { COINLISTS, COMMON_SWAPS } from '@/constants';
 import { CoinListTypes, TokenInfoTypes } from '@/types';
+import { FormattedNumber } from '@/components/primitives/FormattedNumber';
 export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
   oracle?: string;
@@ -31,6 +32,7 @@ interface AssetInputProps {
   maxValue?: string;
   assets: TokenInfoTypes[];
   selectedAsset: TokenInfoTypes;
+  isMaxSelected?: boolean;
   onSelect?: (asset: TokenInfoTypes) => void;
   onChange?: (value: string) => void;
 }
@@ -43,6 +45,7 @@ const SwitchAssetInput = ({
   maxValue,
   disableInput,
   selectedAsset,
+  loading = false,
   onChange,
   onSelect,
 }: AssetInputProps) => {
@@ -67,6 +70,13 @@ const SwitchAssetInput = ({
     handleClose();
   };
 
+  // Turns the account's balance into something nice and readable
+  const formatBalance = (balance: string, symbol: string) => {
+    if (balance && symbol) return parseFloat(balance).toPrecision(8);
+    else return '0.0';
+  };
+  console.log(selectedAsset.balance,'33wjx')
+
   return (
     <Box
       ref={inputRef}
@@ -79,35 +89,41 @@ const SwitchAssetInput = ({
       })}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-        <InputBase
-          sx={{ flex: 1 }}
-          placeholder="0.00"
-          autoFocus
-          value={value}
-          disabled={disabled || disableInput}
-          onChange={(e) => {
-            if (!onChange) return;
-            if (Number(e.target.value) > Number(maxValue)) {
-              onChange('-1');
-            } else {
-              onChange(e.target.value);
-            }
-          }}
-          inputProps={{
-            'aria-label': 'amount input',
-            style: {
-              fontSize: '21px',
-              lineHeight: '28,01px',
-              padding: 0,
-              height: '28px',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            },
-          }}
-          // eslint-disable-next-line
-          inputComponent={NumberFormatCustom as any}
-        />
+        {loading ? (
+          <Box sx={{ flex: 1 }}>
+            <CircularProgress color="inherit" size="16px" />
+          </Box>
+        ) : (
+          <InputBase
+            sx={{ flex: 1 }}
+            placeholder="0.00"
+            autoFocus
+            value={value}
+            disabled={disabled || disableInput}
+            onChange={(e) => {
+              if (!onChange) return;
+              if (Number(e.target.value) > Number(maxValue)) {
+                onChange('-1');
+              } else {
+                onChange(e.target.value);
+              }
+            }}
+            inputProps={{
+              'aria-label': 'amount input',
+              style: {
+                fontSize: '21px',
+                lineHeight: '28,01px',
+                padding: 0,
+                height: '28px',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              },
+            }}
+            // eslint-disable-next-line
+            inputComponent={NumberFormatCustom as any}
+          />
+        )}
         {value !== '' && !disableInput && (
           <IconButton
             sx={{
@@ -273,6 +289,41 @@ const SwitchAssetInput = ({
             )}
           </Box>
         </Menu>
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          height: '16px',
+          flexDirection: 'row-reverse',
+        }}
+      >
+        {(selectedAsset.balance || selectedAsset.balance === 0) && onChange ? (
+          <>
+            {!disableInput && (
+              <Button
+                size="small"
+                sx={{ minWidth: 0, ml: '7px', p: 0 }}
+                onClick={() => {
+                  onChange('-1');
+                }}
+                disabled={disabled}
+              >
+                Max
+              </Button>
+            )}
+            <Typography
+              component="div"
+              variant="secondary12"
+              color="text.secondary"
+            >
+              <span>Balance </span>
+              {formatBalance(selectedAsset.balance, selectedAsset.symbol)}
+            </Typography>
+          </>
+        ) : (
+          ''
+        )}
       </Box>
     </Box>
   );

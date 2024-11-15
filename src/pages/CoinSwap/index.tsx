@@ -16,7 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import { Contract } from 'ethers';
-import { useEffect, useState } from 'react';
+import { debounce } from 'lodash';
+import { useEffect, useMemo, useState } from 'react';
 import { Address } from 'viem';
 import { useChainId } from 'wagmi';
 interface Props {
@@ -31,6 +32,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const [selectedOutputToken, setSelectedOutputToken] = useState<CoinListTypes>(
     network.coins[3],
   );
+  const [debounceInputAmount, setDebounceInputAmount] = useState('');
 
   const [coin1, setCoin1] = useState<{
     address: string | undefined;
@@ -54,28 +56,40 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
-    handleGetInputBlanceAndSymbol(token.address)
+    // handleGetInputBlanceAndSymbol(token.address)
+    handleGetInputBlanceAndSymbol(token.address);
+
   };
 
   const handleSelectedOutputToken = (token: TokenInfoTypes) => {
     setSelectedOutputToken(token);
+    // debounce(handleGetOutputBlanceAndSymbol(token.address),1000)
+    handleGetOutputBlanceAndSymbol(token.address);
+
   };
 
   useEffect(() => {
     setTimeout(() => {
-      handleGetInputBlanceAndSymbol(selectedInputToken.address)
-      handleGetOutputBlanceAndSymbol(selectedOutputToken.address)
-    },1000)
-  },[])
+      handleGetInputBlanceAndSymbol(selectedInputToken.address);
+      handleGetOutputBlanceAndSymbol(selectedOutputToken.address);
+    }, 1000);
+  }, []);
 
   const handleInputChange = async (value: string) => {
     if (value === '-1') {
-      setInputAmount('')
-      // TODO: 这里需要补充余额逻辑和防抖逻辑
+      setInputAmount(selectedInputToken?.balance);
+      // debouncedInputChange(value);
     } else {
       setInputAmount(value);
+      // debouncedInputChange(value);
     }
   };
+
+  const debouncedInputChange = useMemo(() => {
+    return debounce((value: string) => {
+      setDebounceInputAmount(value);
+    }, 300);
+  }, [setDebounceInputAmount]);
 
   const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
@@ -86,7 +100,13 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       network.wethAddress,
       network.coins,
     );
-    console.log('balanceData', balanceData);
+    console.log(balanceData, '333');
+    setSelectedInputToken((pre) => {
+      return {
+        ...pre,
+        balance: balanceData?.balance,
+      };
+    });
     setCoin1({
       address: address,
       symbol: balanceData?.symbol,
@@ -94,7 +114,9 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     });
   };
 
-  const handleGetOutputBlanceAndSymbol = async (address: string | undefined) => {
+  const handleGetOutputBlanceAndSymbol = async (
+    address: string | undefined,
+  ) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
       network.account,
       address,
@@ -103,14 +125,19 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       network.wethAddress,
       network.coins,
     );
-    console.log('balanceData', balanceData);
+    console.log(balanceData, '333');
+    setSelectedOutputToken((pre) => {
+      return {
+        ...pre,
+        balance: balanceData?.balance,
+      };
+    });
     setCoin2({
       address: address,
       symbol: balanceData?.symbol,
       balance: balanceData?.balance,
     });
   };
-
 
   // switch reverse
   const onSwitchReserves = () => {
@@ -156,6 +183,9 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             <SwitchAssetInput
               value={inputAmount}
               chainId={currentChainId}
+              // loading={
+              //   debounceInputAmount !== '0' && debounceInputAmount !== ''
+              // }
               selectedAsset={selectedInputToken}
               assets={COINLISTS?.filter(
                 (token) => token.address !== selectedOutputToken.address,
