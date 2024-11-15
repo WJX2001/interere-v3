@@ -75,7 +75,7 @@ const SwitchAssetInput = ({
     if (balance && symbol) return parseFloat(balance).toPrecision(8);
     else return '0.0';
   };
-  console.log(selectedAsset.balance,'33wjx')
+  console.log(selectedAsset.balance, '33wjx');
 
   return (
     <Box
@@ -298,7 +298,7 @@ const SwitchAssetInput = ({
           flexDirection: 'row-reverse',
         }}
       >
-        {(selectedAsset.balance || selectedAsset.balance === 0) && onChange ? (
+        {onChange && selectedAsset.balance ? (
           <>
             {!disableInput && (
               <Button
@@ -312,15 +312,19 @@ const SwitchAssetInput = ({
                 Max
               </Button>
             )}
-            <Typography
-              component="div"
-              variant="secondary12"
-              color="text.secondary"
-            >
-              <span>Balance </span>
-              {formatBalance(selectedAsset.balance, selectedAsset.symbol)}
-            </Typography>
           </>
+        ) : (
+          ''
+        )}
+        {selectedAsset.balance != null ? (
+          <Typography
+            component="div"
+            variant="secondary12"
+            color="text.secondary"
+          >
+            <span>Balance </span>
+            {formatBalance(selectedAsset.balance, selectedAsset.symbol)}
+          </Typography>
         ) : (
           ''
         )}
