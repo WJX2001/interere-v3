@@ -37,8 +37,27 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
-  const [pairHasNoBalance, setPairHasNoBalance] = useState<boolean>(false);
-  const [hasBalance, setHasBalance] = useState<boolean>(true);
+
+  const [coin1, setCoin1] = useState<{
+    address: string | undefined;
+    symbol: string | undefined;
+    balance: string | undefined;
+  }>({
+    address: network.coins[0].address,
+    symbol: network.coins[0].symbol,
+    balance: network.coins[0].balance,
+  });
+
+  const [coin2, setCoin2] = useState<{
+    address: string | undefined;
+    symbol: string | undefined;
+    balance: string | undefined;
+  }>({
+    address: network.coins[3].address,
+    symbol: network.coins[3].symbol,
+    balance: network.coins[3].balance,
+  });
+
   useEffect(() => {
     setTimeout(() => {
       handleGetInputBlanceAndSymbol(selectedInputToken.address);
@@ -46,49 +65,58 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     }, 1000);
   }, []);
 
-  // useEffect(() => {
-  //   console.log(
-  //     'Trying to get Reserves between:\n' +
-  //       selectedInputToken.address +
-  //       '\n' +
-  //       selectedOutputToken.address,
-  //   );
-  //   if (selectedInputToken.address && selectedOutputToken.address) {
-  //     getReserves(
-  //       selectedInputToken.address,
-  //       selectedOutputToken.address,
-  //       network.factory as Contract,
-  //       network.signer as ethers.providers.JsonRpcSigner,
-  //       network.account as Address,
-  //     ).then((data) => console.log(data, '王吉祥经济'));
-  //   }
-  // }, [
-  //   selectedInputToken.address,
-  //   selectedOutputToken.address,
-  //   network.account,
-  //   network.factory,
-  //   network.router,
-  //   network.signer,
-  // ]);
+  useEffect(() => {
+    console.log(
+      'Trying to get Reserves between:\n' +
+        coin1.address +
+        '\n' +
+        coin2.address,
+    );
+    if (coin1.address && coin2.address) {
+      getReserves(
+        coin1.address,
+        coin2.address,
+        network.factory as Contract,
+        network.signer as ethers.providers.JsonRpcSigner,
+        network.account as Address,
+      ).then((data) => console.log(data, '王吉祥经济'));
+    }
+  }, [
+    coin1.address,
+    coin2.address,
+    network.account,
+    network.factory,
+    network.router,
+    network.signer,
+  ]);
 
   // caculate and set selectToken2 balance
 
   useEffect(() => {
-    if (isNaN(parseFloat(inputAmount))) {
+    if (isNaN(parseFloat(debounceInputAmount))) {
       setOutputAmount('');
-      setPairHasNoBalance(false);
+    } else if (parseFloat(debounceInputAmount) && coin1.address && coin2.address) {
+      getAmountOut(
+        coin1.address,
+        coin2.address,
+        debounceInputAmount,
+        network.router as Contract,
+        network.signer as ethers.providers.JsonRpcSigner,
+      )
+        .then((amount) => {
+          console.log('我看看总额', amount);
+          setOutputAmount((amount as number).toFixed(7));
+        })
+        .catch(() => {
+          setOutputAmount("0xNA");
+        });
     } else {
       setOutputAmount('');
     }
-  }, [
-    debounceInputAmount,
-    selectedInputToken.address,
-    selectedOutputToken.address,
-  ]);
+  }, [debounceInputAmount, coin1.address, coin2.address]);
 
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
-    setPairHasNoBalance(false);
     handleGetInputBlanceAndSymbol(token.address);
   };
 
@@ -99,7 +127,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleInputChange = async (value: string) => {
     if (value === '-1') {
-      // @ts-ignore
       setInputAmount(selectedInputToken?.balance);
       debouncedInputChange(value);
     } else {
@@ -110,32 +137,9 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const debouncedInputChange = useMemo(() => {
     return debounce((value: string) => {
-      console.log('908');
       setDebounceInputAmount(value);
-      if (isNaN(parseFloat(value))) {
-        return 
-      }
-      // fetch amount balance
-      getAmountOut(
-        selectedInputToken.address,
-        selectedOutputToken.address,
-        value,
-        network.router as Contract,
-        network.signer as ethers.providers.JsonRpcSigner,
-      )
-        .then((amount) => {
-          console.log('我看看总额', amount);
-          setOutputAmount((amount as number).toFixed(7));
-        })
-        .catch(() => {
-          setOutputAmount('0xNA');
-        });
     }, 300);
   }, [setDebounceInputAmount]);
-
-  useEffect(() => {
-    console.log(debounceInputAmount, '907');
-  }, [debounceInputAmount]);
 
   const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
@@ -152,6 +156,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         ...pre,
         balance: balanceData?.balance,
       };
+    });
+    setCoin1({
+      address: address,
+      symbol: balanceData?.symbol,
+      balance: balanceData?.balance,
     });
   };
 
@@ -172,6 +181,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         ...pre,
         balance: balanceData?.balance,
       };
+    });
+    setCoin2({
+      address: address,
+      symbol: balanceData?.symbol,
+      balance: balanceData?.balance,
     });
   };
 
@@ -256,17 +270,30 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               assets={COINLISTS?.filter(
                 (token) => token.address !== selectedInputToken.address,
               )}
-              // loading={
-              //   debounceInputAmount !== '0' && debounceInputAmount !== ''
-              // }
               onSelect={handleSelectedOutputToken}
             />
           </Box>
 
-          {/* <SwitchErrors
-            balance={selectedInputToken.balance}
-            inputAmount={inputAmount}
-          /> */}
+          {/* <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: '15px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 4,
+              }}
+            >
+              <Typography variant="h4" sx={{ mt: 6 }}>
+                Balance
+              </Typography>
+            </Box>
+            <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
+              <Grid2 size={6}>97.000000 GLD</Grid2>
+              <Grid2 size={6}>305.98500 USDT</Grid2>
+            </Grid2>
+          </Box> */}
           <Box
             sx={{
               marginTop: '48px',
@@ -279,6 +306,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               Switch
             </Button>
           </Box>
+          <SwitchErrors
+            balance={selectedInputToken.balance}
+            inputAmount={inputAmount}
+          />
+          {/* <SwapPoolErros / */}
         </Paper>
       </Box>
     </>
