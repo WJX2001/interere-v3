@@ -136,7 +136,10 @@ const SwitchAssetInput = ({
                 },
               }}
               onClick={() => {
-                onChange && onChange('');
+                // onChange && onChange('');
+                if (onChange) {
+                  onChange('');
+                }
               }}
               disabled={disabled}
             >

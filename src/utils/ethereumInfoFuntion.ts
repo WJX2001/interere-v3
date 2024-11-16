@@ -53,7 +53,7 @@ export async function getDecimals(token: Contract) {
 
 export async function getBalanceAndSymbol(
   accountAddress: Address,
-  address: Address,
+  address: string,
   provider: ethers.providers.Web3Provider,
   signer: ethers.providers.JsonRpcSigner,
   weth_address: Address,
@@ -188,15 +188,12 @@ export async function swapTokens(
   accountAddress: string,
   signer: ethers.providers.JsonRpcSigner
 ) {
-  debugger
   const tokens = [address1, address2];
   const time = Math.floor(Date.now() / 1000) + 200000;
   const deadline = ethers.BigNumber.from(time);
 
   const token1 = new Contract(address1, ERC20.abi, signer);
   const tokenDecimals = await getDecimals(token1);
-
-  debugger
   const amountIn = ethers.utils.parseUnits(amount, tokenDecimals);
   const amountOut = await routerContract.callStatic.getAmountsOut(
     amountIn,

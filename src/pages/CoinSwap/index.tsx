@@ -137,7 +137,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           network.account,
           selectedInputToken.address,
           network.provider,
-          network.signer,
+          network.signer as ethers.providers.JsonRpcSigner,
           network.weth.address,
           network.coins,
         ).then((data) => {
@@ -152,7 +152,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           network.account,
           selectedOutputToken.address,
           network.provider,
-          network.signer,
+          network.signer as ethers.providers.JsonRpcSigner,
           network.weth.address,
           network.coins,
         ).then((data) => {
@@ -160,7 +160,9 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             ...selectedOutputToken,
             balance: data.balance,
           });
-        });
+        }).catch((e) => {
+          console.log(e, 'error')
+        }) ;
       }
     }, 10000);
 
@@ -201,14 +203,13 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
-      network.account,
-      address,
+      network.account as Address,
+      address as string,
       network.provider,
-      network.signer,
-      network.wethAddress,
+      network.signer as ethers.providers.JsonRpcSigner,
+      network.wethAddress as Address,
       network.coins,
     );
-    console.log(balanceData, '333');
     setSelectedInputToken((pre) => {
       return {
         ...pre,
@@ -222,8 +223,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       network.account as Address,
       address,
       network.provider,
-      network.signer,
-      network.wethAddress,
+      network.signer as ethers.providers.JsonRpcSigner,
+      network.wethAddress as Address,
       network.coins,
     );
     setSelectedOutputToken((pre) => {
@@ -267,7 +268,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const handleSwap = () => {
     console.log('Attempting to swap tokens...');
     setLoading(true);
-    debugger;
     swapTokens(
       selectedInputToken.address,
       selectedOutputToken.address,
