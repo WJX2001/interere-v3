@@ -38,25 +38,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   );
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
 
-  const [coin1, setCoin1] = useState<{
-    address: string | undefined;
-    symbol: string | undefined;
-    balance: string | undefined;
-  }>({
-    address: network.coins[0].address,
-    symbol: network.coins[0].symbol,
-    balance: network.coins[0].balance,
-  });
-
-  const [coin2, setCoin2] = useState<{
-    address: string | undefined;
-    symbol: string | undefined;
-    balance: string | undefined;
-  }>({
-    address: network.coins[3].address,
-    symbol: network.coins[3].symbol,
-    balance: network.coins[3].balance,
-  });
 
   useEffect(() => {
     setTimeout(() => {
@@ -68,22 +49,22 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   useEffect(() => {
     console.log(
       'Trying to get Reserves between:\n' +
-        coin1.address +
+      selectedInputToken.address +
         '\n' +
-        coin2.address,
+        selectedOutputToken.address,
     );
-    if (coin1.address && coin2.address) {
+    if (selectedInputToken.address && selectedOutputToken.address) {
       getReserves(
-        coin1.address,
-        coin2.address,
+        selectedInputToken.address,
+        selectedOutputToken.address,
         network.factory as Contract,
         network.signer as ethers.providers.JsonRpcSigner,
         network.account as Address,
       ).then((data) => console.log(data, '王吉祥经济'));
     }
   }, [
-    coin1.address,
-    coin2.address,
+    selectedInputToken.address,
+    selectedOutputToken.address,
     network.account,
     network.factory,
     network.router,
@@ -95,10 +76,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   useEffect(() => {
     if (isNaN(parseFloat(debounceInputAmount))) {
       setOutputAmount('');
-    } else if (parseFloat(debounceInputAmount) && coin1.address && coin2.address) {
+    } else if (parseFloat(debounceInputAmount) && selectedInputToken.address && selectedOutputToken.address) {
+      debugger
       getAmountOut(
-        coin1.address,
-        coin2.address,
+        selectedInputToken.address,
+        selectedOutputToken.address,
         debounceInputAmount,
         network.router as Contract,
         network.signer as ethers.providers.JsonRpcSigner,
@@ -113,7 +95,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     } else {
       setOutputAmount('');
     }
-  }, [debounceInputAmount, coin1.address, coin2.address]);
+  }, [debounceInputAmount, selectedInputToken.address, selectedOutputToken.address]);
 
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
@@ -157,11 +139,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         balance: balanceData?.balance,
       };
     });
-    setCoin1({
-      address: address,
-      symbol: balanceData?.symbol,
-      balance: balanceData?.balance,
-    });
   };
 
   const handleGetOutputBlanceAndSymbol = async (
@@ -182,17 +159,15 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         balance: balanceData?.balance,
       };
     });
-    setCoin2({
-      address: address,
-      symbol: balanceData?.symbol,
-      balance: balanceData?.balance,
-    });
+
   };
 
   // switch reverse
   const onSwitchReserves = () => {
     const fromToken = selectedInputToken;
     const toToken = selectedOutputToken;
+    setInputAmount(outputAmount)
+    setDebounceInputAmount(outputAmount)
     setSelectedInputToken(toToken);
     setSelectedOutputToken(fromToken);
   };
