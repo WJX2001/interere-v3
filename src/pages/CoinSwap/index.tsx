@@ -1,21 +1,24 @@
+import SwapPoolErros from '@/components/transactions/Switch/SwapPoolErros';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
+import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
-import { useERCContract } from '@/hooks/ethereumInfoHooks';
 import { BalanceAndSymbol, CoinListTypes, TokenInfoTypes } from '@/types';
-import { getBalanceAndSymbol } from '@/utils/ethereumInfoFuntion';
+import {
+  getAmountOut,
+  getBalanceAndSymbol,
+  getReserves,
+} from '@/utils/ethereumInfoFuntion';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
   Button,
-  Divider,
-  Grid2,
   IconButton,
   Paper,
   SvgIcon,
   Typography,
 } from '@mui/material';
-import { Contract } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 import { Address } from 'viem';
@@ -26,6 +29,7 @@ interface Props {
 const CoinSwap: React.FC<Props> = ({ network }) => {
   const currentChainId = useChainId();
   const [inputAmount, setInputAmount] = useState('');
+  const [outputAmount, setOutputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
     network.coins[0],
   );
@@ -33,41 +37,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
-
-  const [coin1, setCoin1] = useState<{
-    address: string | undefined;
-    symbol: string | undefined;
-    balance: string | undefined;
-  }>({
-    address: undefined,
-    symbol: undefined,
-    balance: undefined,
-  });
-
-  const [coin2, setCoin2] = useState<{
-    address: string | undefined;
-    symbol: string | undefined;
-    balance: string | undefined;
-  }>({
-    address: undefined,
-    symbol: undefined,
-    balance: undefined,
-  });
-
-  const handleSelectedInputToken = (token: TokenInfoTypes) => {
-    setSelectedInputToken(token);
-    // handleGetInputBlanceAndSymbol(token.address)
-    handleGetInputBlanceAndSymbol(token.address);
-
-  };
-
-  const handleSelectedOutputToken = (token: TokenInfoTypes) => {
-    setSelectedOutputToken(token);
-    // debounce(handleGetOutputBlanceAndSymbol(token.address),1000)
-    handleGetOutputBlanceAndSymbol(token.address);
-
-  };
-
+  const [pairHasNoBalance, setPairHasNoBalance] = useState<boolean>(false);
+  const [hasBalance, setHasBalance] = useState<boolean>(true);
   useEffect(() => {
     setTimeout(() => {
       handleGetInputBlanceAndSymbol(selectedInputToken.address);
@@ -75,21 +46,96 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     }, 1000);
   }, []);
 
+  // useEffect(() => {
+  //   console.log(
+  //     'Trying to get Reserves between:\n' +
+  //       selectedInputToken.address +
+  //       '\n' +
+  //       selectedOutputToken.address,
+  //   );
+  //   if (selectedInputToken.address && selectedOutputToken.address) {
+  //     getReserves(
+  //       selectedInputToken.address,
+  //       selectedOutputToken.address,
+  //       network.factory as Contract,
+  //       network.signer as ethers.providers.JsonRpcSigner,
+  //       network.account as Address,
+  //     ).then((data) => console.log(data, '王吉祥经济'));
+  //   }
+  // }, [
+  //   selectedInputToken.address,
+  //   selectedOutputToken.address,
+  //   network.account,
+  //   network.factory,
+  //   network.router,
+  //   network.signer,
+  // ]);
+
+  // caculate and set selectToken2 balance
+
+  useEffect(() => {
+    if (isNaN(parseFloat(inputAmount))) {
+      setOutputAmount('');
+      setPairHasNoBalance(false);
+    } else {
+      setOutputAmount('');
+    }
+  }, [
+    debounceInputAmount,
+    selectedInputToken.address,
+    selectedOutputToken.address,
+  ]);
+
+  const handleSelectedInputToken = (token: TokenInfoTypes) => {
+    setSelectedInputToken(token);
+    setPairHasNoBalance(false);
+    handleGetInputBlanceAndSymbol(token.address);
+  };
+
+  const handleSelectedOutputToken = (token: TokenInfoTypes) => {
+    setSelectedOutputToken(token);
+    handleGetOutputBlanceAndSymbol(token.address);
+  };
+
   const handleInputChange = async (value: string) => {
     if (value === '-1') {
+      // @ts-ignore
       setInputAmount(selectedInputToken?.balance);
-      // debouncedInputChange(value);
+      debouncedInputChange(value);
     } else {
       setInputAmount(value);
-      // debouncedInputChange(value);
+      debouncedInputChange(value);
     }
   };
 
   const debouncedInputChange = useMemo(() => {
     return debounce((value: string) => {
+      console.log('908');
       setDebounceInputAmount(value);
+      if (isNaN(parseFloat(value))) {
+        return 
+      }
+      // fetch amount balance
+      getAmountOut(
+        selectedInputToken.address,
+        selectedOutputToken.address,
+        value,
+        network.router as Contract,
+        network.signer as ethers.providers.JsonRpcSigner,
+      )
+        .then((amount) => {
+          console.log('我看看总额', amount);
+          setOutputAmount((amount as number).toFixed(7));
+        })
+        .catch(() => {
+          setOutputAmount('0xNA');
+        });
     }, 300);
   }, [setDebounceInputAmount]);
+
+  useEffect(() => {
+    console.log(debounceInputAmount, '907');
+  }, [debounceInputAmount]);
 
   const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
@@ -106,11 +152,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         ...pre,
         balance: balanceData?.balance,
       };
-    });
-    setCoin1({
-      address: address,
-      symbol: balanceData?.symbol,
-      balance: balanceData?.balance,
     });
   };
 
@@ -131,11 +172,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         ...pre,
         balance: balanceData?.balance,
       };
-    });
-    setCoin2({
-      address: address,
-      symbol: balanceData?.symbol,
-      balance: balanceData?.balance,
     });
   };
 
@@ -213,37 +249,24 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               </SvgIcon>
             </IconButton>
             <SwitchAssetInput
-              value=""
+              value={outputAmount}
               chainId={currentChainId}
               selectedAsset={selectedOutputToken}
               disableInput={true}
               assets={COINLISTS?.filter(
                 (token) => token.address !== selectedInputToken.address,
               )}
+              // loading={
+              //   debounceInputAmount !== '0' && debounceInputAmount !== ''
+              // }
               onSelect={handleSelectedOutputToken}
             />
           </Box>
 
-          {/* <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                gap: '15px',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 4,
-              }}
-            >
-              <Typography variant="h4" sx={{ mt: 6 }}>
-                Balance
-              </Typography>
-            </Box>
-            <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
-              <Grid2 size={6}>97.000000 GLD</Grid2>
-              <Grid2 size={6}>305.98500 USDT</Grid2>
-            </Grid2>
-          </Box> */}
+          {/* <SwitchErrors
+            balance={selectedInputToken.balance}
+            inputAmount={inputAmount}
+          /> */}
           <Box
             sx={{
               marginTop: '48px',

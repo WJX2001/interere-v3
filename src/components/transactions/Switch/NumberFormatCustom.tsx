@@ -29,7 +29,7 @@ export const NumberFormatCustom = React.forwardRef<
       }}
       thousandSeparator
       isNumericString
-      allowNegative={false}
+      // allowNegative={false}
     />
   );
 });

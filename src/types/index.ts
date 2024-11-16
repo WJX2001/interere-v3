@@ -11,7 +11,7 @@ export interface CoinListTypes {
   symbol: string;
   address: string;
   logoURI: string;
-  balance?: number;
+  balance?: string;
 }
 
 export interface TokenInfoTypes {
