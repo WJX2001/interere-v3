@@ -13,6 +13,8 @@ import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
   Button,
+  Divider,
+  Grid2,
   IconButton,
   Paper,
   SvgIcon,
@@ -38,6 +40,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   );
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
 
+  // Stores the current reserves in the liquidity pool between selectedInputToken and selectedOutputToken
+  const [reserves, setReserves] = useState<string[]>(['0.0', '0.0']);
 
   useEffect(() => {
     setTimeout(() => {
@@ -49,7 +53,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   useEffect(() => {
     console.log(
       'Trying to get Reserves between:\n' +
-      selectedInputToken.address +
+        selectedInputToken.address +
         '\n' +
         selectedOutputToken.address,
     );
@@ -60,7 +64,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         network.factory as Contract,
         network.signer as ethers.providers.JsonRpcSigner,
         network.account as Address,
-      ).then((data) => console.log(data, '王吉祥经济'));
+      ).then((data) => setReserves(data));
     }
   }, [
     selectedInputToken.address,
@@ -76,8 +80,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   useEffect(() => {
     if (isNaN(parseFloat(debounceInputAmount))) {
       setOutputAmount('');
-    } else if (parseFloat(debounceInputAmount) && selectedInputToken.address && selectedOutputToken.address) {
-      debugger
+    } else if (
+      parseFloat(debounceInputAmount) &&
+      selectedInputToken.address &&
+      selectedOutputToken.address
+    ) {
       getAmountOut(
         selectedInputToken.address,
         selectedOutputToken.address,
@@ -90,12 +97,71 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           setOutputAmount((amount as number).toFixed(7));
         })
         .catch(() => {
-          setOutputAmount("0xNA");
+          setOutputAmount('0xNA');
         });
     } else {
       setOutputAmount('');
     }
-  }, [debounceInputAmount, selectedInputToken.address, selectedOutputToken.address]);
+  }, [
+    debounceInputAmount,
+    selectedInputToken.address,
+    selectedOutputToken.address,
+  ]);
+
+  useEffect(() => {
+    const coinTimeout = setTimeout(() => {
+      console.log("Checking balances...")
+
+      if (selectedInputToken.address && selectedOutputToken.address && network.account) {
+        getReserves(
+          selectedInputToken.address,
+          selectedOutputToken.address,
+          network.factory,
+          network.signer,
+          network.account
+        ).then((data) => setReserves(data))
+      }
+
+      if (selectedInputToken.address && network.account) {
+        getBalanceAndSymbol(
+          network.account,
+          selectedInputToken.address,
+          network.provider,
+          network.signer,
+          network.weth.address,
+          network.coins
+        ).then((data) => {
+          setSelectedInputToken({
+            ...selectedInputToken,
+            balance: data.balance,
+          })
+        })
+      }
+      if (selectedOutputToken.address && network.account) {
+        getBalanceAndSymbol(
+          network.account,
+          selectedOutputToken.address,
+          network.provider,
+          network.signer,
+          network.weth.address,
+          network.coins
+        ).then((data) => {
+          setSelectedOutputToken({
+            ...selectedOutputToken,
+            balance: data.balance,
+          })
+        })
+      }
+    }, 10000)
+
+    return () => clearTimeout(coinTimeout)
+  })
+
+  // Turns the coin's reserves into something nice and readable
+  const formatReserve = (reserve: string, symbol: string) => {
+    if (reserve && symbol) return reserve + ' ' + symbol;
+    else return '0.0';
+  };
 
   const handleSelectedInputToken = (token: TokenInfoTypes) => {
     setSelectedInputToken(token);
@@ -109,7 +175,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleInputChange = async (value: string) => {
     if (value === '-1') {
-      setInputAmount(selectedInputToken?.balance);
+      setInputAmount(selectedInputToken?.balance as string);
       debouncedInputChange(value);
     } else {
       setInputAmount(value);
@@ -141,35 +207,32 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     });
   };
 
-  const handleGetOutputBlanceAndSymbol = async (
-    address: string | undefined,
-  ) => {
+  const handleGetOutputBlanceAndSymbol = async (address: Address | string) => {
     const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
-      network.account,
+      network.account as Address,
       address,
       network.provider,
       network.signer,
       network.wethAddress,
       network.coins,
     );
-    console.log(balanceData, '333');
     setSelectedOutputToken((pre) => {
       return {
         ...pre,
         balance: balanceData?.balance,
       };
     });
-
   };
 
   // switch reverse
   const onSwitchReserves = () => {
     const fromToken = selectedInputToken;
     const toToken = selectedOutputToken;
-    setInputAmount(outputAmount)
-    setDebounceInputAmount(outputAmount)
+    setInputAmount(outputAmount);
+    setDebounceInputAmount(outputAmount);
     setSelectedInputToken(toToken);
     setSelectedOutputToken(fromToken);
+    setReserves(reserves.reverse());
   };
 
   return (
@@ -249,7 +312,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             />
           </Box>
 
-          {/* <Box>
+          <Box>
+            {/* <Divider sx={{ mt: 4 }} /> */}
             <Box
               sx={{
                 display: 'flex',
@@ -260,15 +324,24 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
                 mb: 4,
               }}
             >
-              <Typography variant="h4" sx={{ mt: 6 }}>
-                Balance
+              <Typography variant="h3" sx={{ mt: 6 }}>
+                Reserves
               </Typography>
             </Box>
             <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
-              <Grid2 size={6}>97.000000 GLD</Grid2>
-              <Grid2 size={6}>305.98500 USDT</Grid2>
+              <Grid2 size={6}>
+                {formatReserve(reserves[0], selectedInputToken.symbol)}
+              </Grid2>
+              <Grid2 size={6}>
+                {formatReserve(reserves[1], selectedOutputToken.symbol)}
+              </Grid2>
             </Grid2>
-          </Box> */}
+          </Box>
+          <Divider sx={{ mt: 4 }} />
+          <SwitchErrors
+            balance={selectedInputToken?.balance as string}
+            inputAmount={inputAmount}
+          />
           <Box
             sx={{
               marginTop: '48px',
@@ -281,10 +354,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               Switch
             </Button>
           </Box>
-          <SwitchErrors
-            balance={selectedInputToken.balance}
-            inputAmount={inputAmount}
-          />
+
           {/* <SwapPoolErros / */}
         </Paper>
       </Box>

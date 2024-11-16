@@ -161,7 +161,6 @@ export async function getAmountOut(
   signer: ethers.providers.JsonRpcSigner,
 ) {
   try {
-    debugger
     const token1 = new Contract(address1, ERC20.abi, signer);
     const token1Decimals = await getDecimals(token1);
 
