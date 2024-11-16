@@ -1,4 +1,5 @@
-import SwapPoolErros from '@/components/transactions/Switch/SwapPoolErros';
+// import LoadingButton from '@/components/primitives/LoadingButton';
+import LoadingButton from '@mui/lab/LoadingButton';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { NetWorkType } from '@/components/Web3Provider';
@@ -8,6 +9,7 @@ import {
   getAmountOut,
   getBalanceAndSymbol,
   getReserves,
+  swapTokens,
 } from '@/utils/ethereumInfoFuntion';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
@@ -22,6 +24,7 @@ import {
 } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import { debounce } from 'lodash';
+import { useSnackbar } from 'notistack';
 import { useEffect, useMemo, useState } from 'react';
 import { Address } from 'viem';
 import { useChainId } from 'wagmi';
@@ -30,6 +33,7 @@ interface Props {
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
   const currentChainId = useChainId();
+  const { enqueueSnackbar } = useSnackbar();
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
@@ -42,6 +46,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   // Stores the current reserves in the liquidity pool between selectedInputToken and selectedOutputToken
   const [reserves, setReserves] = useState<string[]>(['0.0', '0.0']);
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -110,16 +116,20 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   useEffect(() => {
     const coinTimeout = setTimeout(() => {
-      console.log("Checking balances...")
+      console.log('Checking balances...');
 
-      if (selectedInputToken.address && selectedOutputToken.address && network.account) {
+      if (
+        selectedInputToken.address &&
+        selectedOutputToken.address &&
+        network.account
+      ) {
         getReserves(
           selectedInputToken.address,
           selectedOutputToken.address,
           network.factory,
           network.signer,
-          network.account
-        ).then((data) => setReserves(data))
+          network.account,
+        ).then((data) => setReserves(data));
       }
 
       if (selectedInputToken.address && network.account) {
@@ -129,13 +139,13 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           network.provider,
           network.signer,
           network.weth.address,
-          network.coins
+          network.coins,
         ).then((data) => {
           setSelectedInputToken({
             ...selectedInputToken,
             balance: data.balance,
-          })
-        })
+          });
+        });
       }
       if (selectedOutputToken.address && network.account) {
         getBalanceAndSymbol(
@@ -144,18 +154,18 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           network.provider,
           network.signer,
           network.weth.address,
-          network.coins
+          network.coins,
         ).then((data) => {
           setSelectedOutputToken({
             ...selectedOutputToken,
             balance: data.balance,
-          })
-        })
+          });
+        });
       }
-    }, 10000)
+    }, 10000);
 
-    return () => clearTimeout(coinTimeout)
-  })
+    return () => clearTimeout(coinTimeout);
+  });
 
   // Turns the coin's reserves into something nice and readable
   const formatReserve = (reserve: string, symbol: string) => {
@@ -233,6 +243,56 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     setSelectedInputToken(toToken);
     setSelectedOutputToken(fromToken);
     setReserves(reserves.reverse());
+  };
+
+  // Determines whether the button should be enabled or not
+  const isButtonEnabled = () => {
+    // If both coins have been selected, and a valid float has been entered which is less than the user's balance, then return true
+    const parsedInput1 = parseFloat(inputAmount);
+    const parsedInput2 = parseFloat(outputAmount);
+    if (outputAmount === '0xNA') {
+      return false;
+    }
+    return (
+      selectedInputToken.address &&
+      selectedOutputToken.address &&
+      !isNaN(parsedInput1) &&
+      !isNaN(parsedInput2) &&
+      0 < parsedInput1 &&
+      // @ts-ignore
+      parsedInput1 <= selectedInputToken.balance
+    );
+  };
+
+  const handleSwap = () => {
+    console.log('Attempting to swap tokens...');
+    setLoading(true);
+    debugger;
+    swapTokens(
+      selectedInputToken.address,
+      selectedOutputToken.address,
+      inputAmount,
+      network.router as Contract,
+      network.account as Address,
+      network.signer as ethers.providers.JsonRpcSigner,
+    )
+      .then(() => {
+        setLoading(false);
+        // If the transaction was successful, we clear to input to make sure the user doesn't accidental redo the transfer
+        setInputAmount('');
+        setOutputAmount('');
+        enqueueSnackbar('Transaction Successful', {
+          variant: 'success',
+          autoHideDuration: 10000,
+        });
+      })
+      .catch((e) => {
+        setLoading(false);
+        enqueueSnackbar('Transaction Failed (' + e.message + ')', {
+          variant: 'error',
+          autoHideDuration: 10000,
+        });
+      });
   };
 
   return (
@@ -344,15 +404,36 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
           />
           <Box
             sx={{
-              marginTop: '48px',
+              marginTop: '38px',
               display: 'flex',
               alignContent: 'center',
               justifyContent: 'center',
+              position: 'relative',
             }}
           >
-            <Button variant="contained" sx={{ width: '100%' }}>
+            {/* <Button variant="contained" sx={{ width: '100%' }}>
               Switch
-            </Button>
+            </Button> */}
+            {/* <LoadingButton
+              // loading={loading}
+              loading={true}
+              valid={isButtonEnabled()}
+              onClick={handleSwap}
+              // sx={{
+                
+              // }}
+            >
+              Switch
+            </LoadingButton> */}
+            <LoadingButton
+              sx={{ width: '100%' }}
+              variant="contained"
+              loading={loading}
+              disabled={loading || !isButtonEnabled()}
+              onClick={handleSwap}
+            >
+              Switch
+            </LoadingButton>
           </Box>
 
           {/* <SwapPoolErros / */}

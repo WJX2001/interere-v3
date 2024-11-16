@@ -845,6 +845,33 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
+"@floating-ui/core@^1.6.0":
+  version "1.6.8"
+  resolved "https://registry.npmmirror.com/@floating-ui/core/-/core-1.6.8.tgz#aa43561be075815879305965020f492cdb43da12"
+  integrity sha512-7XJ9cPU+yI2QeLS+FCSlqNFZJq8arvswefkZrYI1yQBbftw6FyrZOxYSh+9S7z7TpeWlRt9zJ5IhM1WIL334jA==
+  dependencies:
+    "@floating-ui/utils" "^0.2.8"
+
+"@floating-ui/dom@^1.0.0":
+  version "1.6.12"
+  resolved "https://registry.npmmirror.com/@floating-ui/dom/-/dom-1.6.12.tgz#6333dcb5a8ead3b2bf82f33d6bc410e95f54e556"
+  integrity sha512-NP83c0HjokcGVEMeoStg317VD9W7eDlGK7457dMBANbKA6GJZdc7rjujdgqzTaz93jkGgc5P/jeWbaCHnMNc+w==
+  dependencies:
+    "@floating-ui/core" "^1.6.0"
+    "@floating-ui/utils" "^0.2.8"
+
+"@floating-ui/react-dom@^2.1.1":
+  version "2.1.2"
+  resolved "https://registry.npmmirror.com/@floating-ui/react-dom/-/react-dom-2.1.2.tgz#a1349bbf6a0e5cb5ded55d023766f20a4d439a31"
+  integrity sha512-06okr5cgPzMNBy+Ycse2A6udMi4bqwW/zgBF/rwjcNqWkyr82Mcg8b0vjX8OJpZFy/FKjJmw6wV7t44kK6kW7A==
+  dependencies:
+    "@floating-ui/dom" "^1.0.0"
+
+"@floating-ui/utils@^0.2.8":
+  version "0.2.8"
+  resolved "https://registry.npmmirror.com/@floating-ui/utils/-/utils-0.2.8.tgz#21a907684723bbbaa5f0974cf7730bd797eb8e62"
+  integrity sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==
+
 "@heroicons/react@v1":
   version "1.0.6"
   resolved "https://registry.npmmirror.com/@heroicons/react/-/react-1.0.6.tgz#35dd26987228b39ef2316db3b1245c42eb19e324"
@@ -1169,6 +1196,19 @@
     "@motionone/dom" "^10.16.4"
     tslib "^2.3.1"
 
+"@mui/base@5.0.0-beta.61":
+  version "5.0.0-beta.61"
+  resolved "https://registry.npmmirror.com/@mui/base/-/base-5.0.0-beta.61.tgz#729e816b5104da1eeeacb11d1e61be90f2c21dcc"
+  integrity sha512-YaMOTXS3ecDNGsPKa6UdlJ8loFLvcL9+VbpCK3hfk71OaNauZRp4Yf7KeXDYr7Ms3M/XBD3SaiR6JMr6vYtfDg==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@floating-ui/react-dom" "^2.1.1"
+    "@mui/types" "^7.2.19"
+    "@mui/utils" "^6.1.6"
+    "@popperjs/core" "^2.11.8"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+
 "@mui/core-downloads-tracker@^6.1.6":
   version "6.1.6"
   resolved "https://registry.npmmirror.com/@mui/core-downloads-tracker/-/core-downloads-tracker-6.1.6.tgz#73d96e75689b2af922a989123149a3497c8a96fa"
@@ -1180,6 +1220,19 @@
   integrity sha512-5r9urIL2lxXb/sPN3LFfFYEibsXJUb986HhhIeu1gOcte460pwdSiEhBSxkAuyT8Dj7jvu9MjqSBmSumQELo8A==
   dependencies:
     "@babel/runtime" "^7.26.0"
+
+"@mui/lab@^6.0.0-beta.15":
+  version "6.0.0-beta.15"
+  resolved "https://registry.npmmirror.com/@mui/lab/-/lab-6.0.0-beta.15.tgz#32e7ab50d4c8131caea079a137f625da77fbac4d"
+  integrity sha512-LwX34gdIBBpIHi0RkWUjktCnX1rEB+U2tOzDKfF2f4h+GXTO+DOjAXTkFw558zQ8SWmpQTOUp58sGRxlZ2x9FQ==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@mui/base" "5.0.0-beta.61"
+    "@mui/system" "^6.1.7"
+    "@mui/types" "^7.2.19"
+    "@mui/utils" "^6.1.7"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
 
 "@mui/material@^6.1.6":
   version "6.1.6"
@@ -1208,10 +1261,31 @@
     "@mui/utils" "^6.1.6"
     prop-types "^15.8.1"
 
+"@mui/private-theming@^6.1.7":
+  version "6.1.7"
+  resolved "https://registry.npmmirror.com/@mui/private-theming/-/private-theming-6.1.7.tgz#9415c32eb567194b713941243cf18fde09981ba1"
+  integrity sha512-uLbfUSsug5K0LVkv0PI6Flste3le8+6WSL2omdTiYde93P89Qr7pKr8TA6d2yXfr+Bm+SvD8/fGnkaRwFkryuQ==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@mui/utils" "^6.1.7"
+    prop-types "^15.8.1"
+
 "@mui/styled-engine@^6.1.6":
   version "6.1.6"
   resolved "https://registry.npmmirror.com/@mui/styled-engine/-/styled-engine-6.1.6.tgz#61996621a0297aac16061e1739a738a899613fd6"
   integrity sha512-I+yS1cSuSvHnZDBO7e7VHxTWpj+R7XlSZvTC4lS/OIbUNJOMMSd3UDP6V2sfwzAdmdDNBi7NGCRv2SZ6O9hGDA==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@emotion/cache" "^11.13.1"
+    "@emotion/serialize" "^1.3.2"
+    "@emotion/sheet" "^1.4.0"
+    csstype "^3.1.3"
+    prop-types "^15.8.1"
+
+"@mui/styled-engine@^6.1.7":
+  version "6.1.7"
+  resolved "https://registry.npmmirror.com/@mui/styled-engine/-/styled-engine-6.1.7.tgz#2e38642325afe473dd14349c95a56e947640b154"
+  integrity sha512-Ou4CxN7MQmwrfG1Pu6EYjPgPChQXxPDJrwgizLXlRPOad5qAq4gYXRuzrGQ2DfGjjwmJhjI8T6A0SeapAZPGig==
   dependencies:
     "@babel/runtime" "^7.26.0"
     "@emotion/cache" "^11.13.1"
@@ -1234,6 +1308,20 @@
     csstype "^3.1.3"
     prop-types "^15.8.1"
 
+"@mui/system@^6.1.7":
+  version "6.1.7"
+  resolved "https://registry.npmmirror.com/@mui/system/-/system-6.1.7.tgz#041d450b842d5c2fb1608d4027360ad2ba25bd9a"
+  integrity sha512-qbMGgcC/FodpuRSfjXlEDdbNQaW++eATh0vNBcPUv2/YXSpReoOpoT9FhogxEBNks+aQViDXBRZKh6HX2fVmwg==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@mui/private-theming" "^6.1.7"
+    "@mui/styled-engine" "^6.1.7"
+    "@mui/types" "^7.2.19"
+    "@mui/utils" "^6.1.7"
+    clsx "^2.1.1"
+    csstype "^3.1.3"
+    prop-types "^15.8.1"
+
 "@mui/types@^7.2.19":
   version "7.2.19"
   resolved "https://registry.npmmirror.com/@mui/types/-/types-7.2.19.tgz#c941954dd24393fdce5f07830d44440cf4ab6c80"
@@ -1243,6 +1331,18 @@
   version "6.1.6"
   resolved "https://registry.npmmirror.com/@mui/utils/-/utils-6.1.6.tgz#4b9fd34da3a1dd4700fe506a20ca7da3933ba48e"
   integrity sha512-sBS6D9mJECtELASLM+18WUcXF6RH3zNxBRFeyCRg8wad6NbyNrdxLuwK+Ikvc38sTZwBzAz691HmSofLqHd9sQ==
+  dependencies:
+    "@babel/runtime" "^7.26.0"
+    "@mui/types" "^7.2.19"
+    "@types/prop-types" "^15.7.13"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+    react-is "^18.3.1"
+
+"@mui/utils@^6.1.7":
+  version "6.1.7"
+  resolved "https://registry.npmmirror.com/@mui/utils/-/utils-6.1.7.tgz#0959d9772ae13c6ceac984a493e06aebb9087e71"
+  integrity sha512-Gr7cRZxBoZ0BIa3Xqf/2YaUrBLyNPJvXPQH3OsD9WMZukI/TutibbQBVqLYpgqJn8pKSjbD50Yq2auG0wI1xOw==
   dependencies:
     "@babel/runtime" "^7.26.0"
     "@mui/types" "^7.2.19"
@@ -2593,7 +2693,7 @@ clsx@2.1.1, clsx@^2.1.1:
   resolved "https://registry.npmmirror.com/clsx/-/clsx-2.1.1.tgz#eed397c9fd8bd882bfb18deab7102049a2f32999"
   integrity sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==
 
-clsx@^1.2.1:
+clsx@^1.1.0, clsx@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmmirror.com/clsx/-/clsx-1.2.1.tgz#0ddc4a20a549b59c93a4116bb26f5294ca17dc12"
   integrity sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==
@@ -3381,6 +3481,11 @@ globals@^15.11.0:
   resolved "https://registry.npmmirror.com/globals/-/globals-15.12.0.tgz#1811872883ad8f41055b61457a130221297de5b5"
   integrity sha512-1+gLErljJFhbOVyaetcwJiJ4+eLe45S2E7P5UiZ9xGfeq3ATQf5DOv9G7MH3gGbKQLkzmNh2DxfZwLdw+j6oTQ==
 
+goober@^2.0.33:
+  version "2.1.16"
+  resolved "https://registry.npmmirror.com/goober/-/goober-2.1.16.tgz#7d548eb9b83ff0988d102be71f271ca8f9c82a95"
+  integrity sha512-erjk19y1U33+XAMe1VTvIONHYoSqE4iS7BYUZfHaqeohLmnC0FdxEh7rQU+6MZ4OajItzjZFSRtVANrQwNq6/g==
+
 gopd@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/gopd/-/gopd-1.0.1.tgz#29ff76de69dac7489b7c0918a5788e56477c332c"
@@ -4097,6 +4202,14 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   version "3.0.0"
   resolved "https://registry.npmmirror.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
+
+notistack@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmmirror.com/notistack/-/notistack-3.0.1.tgz#daf59888ab7e2c30a1fa8f71f9cba2978773236e"
+  integrity sha512-ntVZXXgSQH5WYfyU+3HfcXuKaapzAJ8fBLQ/G618rn3yvSzEbnOB8ZSOwhX+dAORy/lw+GC2N061JA0+gYWTVA==
+  dependencies:
+    clsx "^1.1.0"
+    goober "^2.0.33"
 
 npm-run-path@^5.1.0:
   version "5.3.0"

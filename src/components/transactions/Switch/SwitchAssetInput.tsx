@@ -14,12 +14,10 @@ import NumberFormatCustom from './NumberFormatCustom';
 import { XCircleIcon } from '@heroicons/react/solid';
 import { ExternalTokenIcon } from '@/components/primitives/TokenIcon';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
 import { COINLISTS, COMMON_SWAPS } from '@/constants';
-import { CoinListTypes, TokenInfoTypes } from '@/types';
-import { FormattedNumber } from '@/components/primitives/FormattedNumber';
-import SwitchErrors from './SwitchErrors';
+import { TokenInfoTypes } from '@/types';
 export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
   oracle?: string;
@@ -42,7 +40,6 @@ interface AssetInputProps {
 const SwitchAssetInput = ({
   value,
   assets,
-  chainId,
   disabled,
   maxValue,
   disableInput,

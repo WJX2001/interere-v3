@@ -1,4 +1,4 @@
-import { Abi, Address } from 'viem';
+import { Abi } from 'viem';
 
 export interface MenuItemsTypes {
   title: string;

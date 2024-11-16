@@ -178,3 +178,59 @@ export async function getAmountOut(
     return false;
   }
 }
+
+
+export async function swapTokens(
+  address1: string,
+  address2: string,
+  amount: string,
+  routerContract: Contract,
+  accountAddress: string,
+  signer: ethers.providers.JsonRpcSigner
+) {
+  debugger
+  const tokens = [address1, address2];
+  const time = Math.floor(Date.now() / 1000) + 200000;
+  const deadline = ethers.BigNumber.from(time);
+
+  const token1 = new Contract(address1, ERC20.abi, signer);
+  const tokenDecimals = await getDecimals(token1);
+
+  debugger
+  const amountIn = ethers.utils.parseUnits(amount, tokenDecimals);
+  const amountOut = await routerContract.callStatic.getAmountsOut(
+    amountIn,
+    tokens
+  );
+
+  await token1.approve(routerContract.address, amountIn);
+  const wethAddress = await routerContract.WETH();
+
+  if (address1 === wethAddress) {
+    // Eth -> Token
+    await routerContract.swapExactETHForTokens(
+      amountOut[1],
+      tokens,
+      accountAddress,
+      deadline,
+      { value: amountIn }
+    );
+  } else if (address2 === wethAddress) {
+    // Token -> Eth
+    await routerContract.swapExactTokensForETH(
+      amountIn,
+      amountOut[1],
+      tokens,
+      accountAddress,
+      deadline
+    );
+  } else {
+    await routerContract.swapExactTokensForTokens(
+      amountIn,
+      amountOut[1],
+      tokens,
+      accountAddress,
+      deadline
+    );
+  }
+}
