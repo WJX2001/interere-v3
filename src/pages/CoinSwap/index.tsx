@@ -4,11 +4,17 @@ import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput'
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
-import { BalanceAndSymbol, CoinListTypes, GetBalanceAndSymbolResult, TokenInfoTypes } from '@/types';
+import {
+  BalanceAndSymbol,
+  CoinListTypes,
+  GetBalanceAndSymbolResult,
+  TokenInfoTypes,
+} from '@/types';
 import {
   getAmountOut,
   getBalanceAndSymbol,
   getBalanceAndSymbolByWagmi,
+  getDecimalsERC20,
   getReserves,
   swapTokens,
 } from '@/utils/ethereumInfoFuntion';
@@ -29,12 +35,19 @@ import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
-import { useERCContract, useGetFactory } from '@/hooks/useContract';
+import {
+  useERC20,
+  useGetAmountOut,
+  useGetFactory,
+  useRouterContract,
+} from '@/hooks/useContract';
+import { uuid } from '@/utils';
 interface Props {
   network: {
     wethAddress: Address;
     coins: CoinListTypes[];
     factory: ReturnType<typeof useGetFactory>;
+    router: ReturnType<typeof useRouterContract>;
   };
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
@@ -59,9 +72,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const [reserves, setReserves] = useState<string[]>(['0.0', '0.0']);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const erc20TokenInputContract = useERCContract(selectedInputToken.address);
-  const erc20TokenOutputContract = useERCContract(selectedOutputToken.address);
-
+  // output loading
+  const [outputLoading, setOutputLoading] = useState<boolean>(true);
+  const [randomNumber, setRandomNumber] = useState<string>(uuid());
+  const erc20TokenInputContract = useERC20(selectedInputToken.address);
+  const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,
@@ -71,7 +86,16 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       balanceData,
       erc20TokenInputContract,
     );
-    console.log(res, 22);
+    if (res) {
+      const { balance, symbol } = res;
+      setSelectedInputToken((pre) => {
+        return {
+          ...pre,
+          balance,
+          symbol,
+        };
+      });
+    }
   }, [
     erc20TokenInputContract,
     userAddress,
@@ -107,10 +131,12 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     erc20TokenOutputContract,
   ]);
 
+
+
   useEffect(() => {
     handleGetInputSymbolAndBalance();
     handleGetOutputSymbolAndBalance();
-  }, [handleGetInputSymbolAndBalance, handleGetOutputSymbolAndBalance]);
+  }, [randomNumber]);
 
   // useEffect(() => {
   //   setTimeout(() => {
@@ -145,6 +171,39 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   // ]);
 
   // // caculate and set selectToken2 balance
+
+  const fetchData = async () => {
+    try {
+      const decimal1 = await getDecimalsERC20(erc20TokenInputContract);
+      const decimal2 = await getDecimalsERC20(erc20TokenOutputContract);
+      const amountIn = ethers.utils.parseUnits(debounceInputAmount, decimal1);
+      const values_out = await network?.router?.read.getAmountsOut([
+        amountIn,
+        [selectedInputToken.address, selectedOutputToken.address],
+      ]);
+      // const amount_out = 
+    } catch {
+      setOutputAmount('0xNA');
+      setOutputLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isNaN(parseFloat(debounceInputAmount))) {
+      setOutputAmount('');
+    } else if (
+      parseFloat(debounceInputAmount) &&
+      selectedInputToken?.address &&
+      selectedOutputToken?.address
+    ) {
+      fetchData();
+      setOutputLoading(true);
+    }
+  }, [
+    debounceInputAmount,
+    selectedInputToken?.address,
+    selectedOutputToken?.address,
+  ]);
 
   // useEffect(() => {
   //   if (isNaN(parseFloat(debounceInputAmount))) {
@@ -240,12 +299,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleSelectedInputToken = (token: CoinListTypes) => {
     setSelectedInputToken(token);
-    handleGetInputBlanceAndSymbol(token.address);
   };
 
   const handleSelectedOutputToken = (token: CoinListTypes) => {
     setSelectedOutputToken(token);
-    handleGetOutputBlanceAndSymbol(token.address);
+    setRandomNumber(uuid())
   };
 
   const handleInputChange = async (value: string) => {
@@ -328,182 +386,184 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     );
   };
 
-  const handleSwap = () => {
-    console.log('Attempting to swap tokens...');
-    setLoading(true);
-    swapTokens(
-      selectedInputToken.address,
-      selectedOutputToken.address,
-      inputAmount,
-      network.router as Contract,
-      network.account as Address,
-      network.signer as ethers.providers.JsonRpcSigner,
-    )
-      .then(() => {
-        setLoading(false);
-        // If the transaction was successful, we clear to input to make sure the user doesn't accidental redo the transfer
-        setInputAmount('');
-        setOutputAmount('');
-        enqueueSnackbar('Transaction Successful', {
-          variant: 'success',
-          autoHideDuration: 10000,
-        });
-      })
-      .catch((e) => {
-        setLoading(false);
-        enqueueSnackbar('Transaction Failed (' + e.message + ')', {
-          variant: 'error',
-          autoHideDuration: 10000,
-        });
-      });
-  };
+  // const handleSwap = () => {
+  //   console.log('Attempting to swap tokens...');
+  //   setLoading(true);
+  //   swapTokens(
+  //     selectedInputToken.address,
+  //     selectedOutputToken.address,
+  //     inputAmount,
+  //     network.router as Contract,
+  //     network.account as Address,
+  //     network.signer as ethers.providers.JsonRpcSigner,
+  //   )
+  //     .then(() => {
+  //       setLoading(false);
+  //       // If the transaction was successful, we clear to input to make sure the user doesn't accidental redo the transfer
+  //       setInputAmount('');
+  //       setOutputAmount('');
+  //       enqueueSnackbar('Transaction Successful', {
+  //         variant: 'success',
+  //         autoHideDuration: 10000,
+  //       });
+  //     })
+  //     .catch((e) => {
+  //       setLoading(false);
+  //       enqueueSnackbar('Transaction Failed (' + e.message + ')', {
+  //         variant: 'error',
+  //         autoHideDuration: 10000,
+  //       });
+  //     });
+  // };
 
   return (
-    // <>
-    //   <Box
-    //     sx={(theme) => ({
-    //       paddingTop: theme.spacing(12),
-    //       display: 'flex', // 启用弹性布局
-    //       justifyContent: 'center', // 水平居中
-    //       alignItems: 'center', // 垂直居中
-    //     })}
-    //   >
-    //     <Paper
-    //       sx={(theme) => ({
-    //         // maxWidth: '380px',
-    //         padding: theme.spacing(6),
-    //         maxWidth: { xs: '359px', xsm: '420px' },
-    //         maxHeight: 'calc(100vh - 20px)',
-    //         overflowY: 'auto',
-    //         width: '100%',
-    //       })}
-    //     >
-    //       <Typography variant="h2" sx={{ mb: 6 }}>
-    //         Switch tokens
-    //       </Typography>
-    //       <Box
-    //         sx={{
-    //           display: 'flex',
-    //           gap: '15px',
-    //           flexDirection: 'column',
-    //           alignItems: 'center',
-    //           justifyContent: 'center',
-    //           position: 'relative',
-    //         }}
-    //       >
-    //         <SwitchAssetInput
-    //           value={inputAmount}
-    //           chainId={currentChainId}
-    //           // loading={
-    //           //   debounceInputAmount !== '0' && debounceInputAmount !== ''
-    //           // }
-    //           selectedAsset={selectedInputToken}
-    //           assets={COINLISTS?.filter(
-    //             (token) => token.address !== selectedOutputToken.address,
-    //           )}
-    //           onSelect={handleSelectedInputToken}
-    //           onChange={handleInputChange}
-    //         />
-    //         <IconButton
-    //           onClick={onSwitchReserves}
-    //           sx={{
-    //             border: '1px solid',
-    //             borderColor: 'divider',
-    //             position: 'absolute',
-    //             backgroundColor: 'background.paper',
-    //             '&:hover': { backgroundColor: 'background.surface' },
-    //           }}
-    //         >
-    //           <SvgIcon
-    //             sx={{
-    //               color: 'primary.main',
-    //               fontSize: '18px',
-    //             }}
-    //           >
-    //             <SwitchVerticalIcon />
-    //           </SvgIcon>
-    //         </IconButton>
-    //         <SwitchAssetInput
-    //           value={outputAmount}
-    //           chainId={currentChainId}
-    //           selectedAsset={selectedOutputToken}
-    //           disableInput={true}
-    //           assets={COINLISTS?.filter(
-    //             (token) => token.address !== selectedInputToken.address,
-    //           )}
-    //           onSelect={handleSelectedOutputToken}
-    //         />
-    //       </Box>
+    <>
+      <Box
+        sx={(theme) => ({
+          paddingTop: theme.spacing(12),
+          display: 'flex', // 启用弹性布局
+          justifyContent: 'center', // 水平居中
+          alignItems: 'center', // 垂直居中
+        })}
+      >
+        <Paper
+          sx={(theme) => ({
+            // maxWidth: '380px',
+            padding: theme.spacing(6),
+            maxWidth: { xs: '359px', xsm: '420px' },
+            maxHeight: 'calc(100vh - 20px)',
+            overflowY: 'auto',
+            width: '100%',
+          })}
+        >
+          <Typography variant="h2" sx={{ mb: 6 }}>
+            Switch tokens
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '15px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            <SwitchAssetInput
+              value={inputAmount}
+              chainId={currentChainId}
+              selectedAsset={selectedInputToken}
+              assets={COINLISTS?.filter(
+                (token) => token.address !== selectedOutputToken.address,
+              )}
+              onSelect={handleSelectedInputToken}
+              onChange={handleInputChange}
+            />
+            <IconButton
+              onClick={onSwitchReserves}
+              sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                position: 'absolute',
+                backgroundColor: 'background.paper',
+                '&:hover': { backgroundColor: 'background.surface' },
+              }}
+            >
+              <SvgIcon
+                sx={{
+                  color: 'primary.main',
+                  fontSize: '18px',
+                }}
+              >
+                <SwitchVerticalIcon />
+              </SvgIcon>
+            </IconButton>
+            <SwitchAssetInput
+              value={outputAmount}
+              loading={
+                debounceInputAmount !== '0' &&
+                debounceInputAmount !== '' &&
+                outputLoading
+              }
+              chainId={currentChainId}
+              selectedAsset={selectedOutputToken}
+              disableInput={true}
+              assets={COINLISTS?.filter(
+                (token) => token.address !== selectedInputToken.address,
+              )}
+              onSelect={handleSelectedOutputToken}
+            />
+          </Box>
 
-    //       <Box>
-    //         {/* <Divider sx={{ mt: 4 }} /> */}
-    //         <Box
-    //           sx={{
-    //             display: 'flex',
-    //             gap: '15px',
-    //             flexDirection: 'column',
-    //             alignItems: 'center',
-    //             justifyContent: 'center',
-    //             mb: 4,
-    //           }}
-    //         >
-    //           <Typography variant="h3" sx={{ mt: 6 }}>
-    //             Reserves
-    //           </Typography>
-    //         </Box>
-    //         <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
-    //           <Grid2 size={6}>
-    //             {formatReserve(reserves[0], selectedInputToken.symbol)}
-    //           </Grid2>
-    //           <Grid2 size={6}>
-    //             {formatReserve(reserves[1], selectedOutputToken.symbol)}
-    //           </Grid2>
-    //         </Grid2>
-    //       </Box>
-    //       <Divider sx={{ mt: 4 }} />
-    //       <SwitchErrors
-    //         balance={selectedInputToken?.balance as string}
-    //         inputAmount={inputAmount}
-    //       />
-    //       <Box
-    //         sx={{
-    //           marginTop: '38px',
-    //           display: 'flex',
-    //           alignContent: 'center',
-    //           justifyContent: 'center',
-    //           position: 'relative',
-    //         }}
-    //       >
-    //         {/* <Button variant="contained" sx={{ width: '100%' }}>
-    //           Switch
-    //         </Button> */}
-    //         {/* <LoadingButton
-    //           // loading={loading}
-    //           loading={true}
-    //           valid={isButtonEnabled()}
-    //           onClick={handleSwap}
-    //           // sx={{
+          <Box>
+            {/* <Divider sx={{ mt: 4 }} /> */}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: '15px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 4,
+              }}
+            >
+              <Typography variant="h3" sx={{ mt: 6 }}>
+                Reserves
+              </Typography>
+            </Box>
+            <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
+              <Grid2 size={6}>
+                {formatReserve(reserves[0], selectedInputToken.symbol)}
+              </Grid2>
+              <Grid2 size={6}>
+                {formatReserve(reserves[1], selectedOutputToken.symbol)}
+              </Grid2>
+            </Grid2>
+          </Box>
+          <Divider sx={{ mt: 4 }} />
+          <SwitchErrors
+            balance={selectedInputToken?.balance as string}
+            inputAmount={inputAmount}
+          />
+          <Box
+            sx={{
+              marginTop: '38px',
+              display: 'flex',
+              alignContent: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            {/* <Button variant="contained" sx={{ width: '100%' }}>
+              Switch
+            </Button> */}
+            {/* <LoadingButton
+              // loading={loading}
+              loading={true}
+              valid={isButtonEnabled()}
+              onClick={handleSwap}
+              // sx={{
 
-    //           // }}
-    //         >
-    //           Switch
-    //         </LoadingButton> */}
-    //         <LoadingButton
-    //           sx={{ width: '100%' }}
-    //           variant="contained"
-    //           loading={loading}
-    //           disabled={loading || !isButtonEnabled()}
-    //           onClick={handleSwap}
-    //         >
-    //           Switch
-    //         </LoadingButton>
-    //       </Box>
+              // }}
+            >
+              Switch
+            </LoadingButton> */}
+            {/* <LoadingButton
+              sx={{ width: '100%' }}
+              variant="contained"
+              loading={loading}
+              disabled={loading || !isButtonEnabled()}
+              onClick={handleSwap}
+            >
+              Switch
+            </LoadingButton> */}
+          </Box>
 
-    //       {/* <SwapPoolErros / */}
-    //     </Paper>
-    //   </Box>
-    // </>
-    <>22222</>
+          {/* <SwapPoolErros / */}
+        </Paper>
+      </Box>
+    </>
+    // <>22222</>
   );
 };
 

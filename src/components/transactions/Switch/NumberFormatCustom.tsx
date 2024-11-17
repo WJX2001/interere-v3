@@ -13,7 +13,6 @@ export const NumberFormatCustom = React.forwardRef<
   CustomProps
 >(function NumberFormatCustom(props, ref) {
   const { onChange, ...other } = props;
-
   return (
     <NumberFormat
       {...other}

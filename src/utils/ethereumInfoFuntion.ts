@@ -1,44 +1,11 @@
 import { Contract, ethers } from 'ethers';
-import ROUTER from '@/build/UniswapV2Router02.json';
 import ERC20 from '@/build/ERC20.json';
-import FACTORY from '@/build/IUniswapV2Factory.json';
 import PAIR from '@/build/IUniswapV2Pair.json';
 import { Address, formatUnits } from 'viem';
 import { CoinListTypes, GetBalanceAndSymbolResult } from '@/types';
-import { useERCContract } from '@/hooks/useContract';
+import { useERC20, useRouterContract } from '@/hooks/useContract';
 import { UseBalanceReturnType } from 'wagmi';
-export async function getNetwork(provider: ethers.providers.Web3Provider) {
-  const network = await provider.getNetwork();
-  return network.chainId;
-}
 
-export async function getAccount() {
-  const accounts = await window.ethereum.request({
-    method: 'eth_requestAccounts',
-  });
-  return accounts[0];
-}
-
-export function getWeth(
-  address: Address,
-  signer: ethers.providers.JsonRpcSigner,
-) {
-  return new Contract(address, ERC20.abi, signer);
-}
-
-export function getRouter(
-  address: Address,
-  signer: ethers.providers.JsonRpcSigner,
-) {
-  return new Contract(address, ROUTER.abi, signer);
-}
-
-export function getFactory(
-  address: Address,
-  signer: ethers.providers.JsonRpcSigner,
-) {
-  return new Contract(address, FACTORY.abi, signer);
-}
 
 export async function getDecimals(token: Contract) {
   const decimals = await token
@@ -155,31 +122,31 @@ export async function getReserves(
   }
 }
 
-export async function getAmountOut(
-  address1: string,
-  address2: string,
-  amountIn: string,
-  routerContract: Contract,
-  signer: ethers.providers.JsonRpcSigner,
-) {
-  try {
-    const token1 = new Contract(address1, ERC20.abi, signer);
-    const token1Decimals = await getDecimals(token1);
+// export async function getAmountOut(
+//   address1: string,
+//   address2: string,
+//   amountIn: string,
+//   routerContract: Contract,
+//   signer: ethers.providers.JsonRpcSigner,
+// ) {
+//   try {
+//     const token1 = new Contract(address1, ERC20.abi, signer);
+//     const token1Decimals = await getDecimals(token1);
 
-    const token2 = new Contract(address2, ERC20.abi, signer);
-    const token2Decimals = await getDecimals(token2);
+//     const token2 = new Contract(address2, ERC20.abi, signer);
+//     const token2Decimals = await getDecimals(token2);
 
-    const values_out = await routerContract.getAmountsOut(
-      ethers.utils.parseUnits(String(amountIn), token1Decimals),
-      [address1, address2],
-    );
-    const amount_out = values_out[1] * 10 ** -token2Decimals;
-    console.log('amount out: ', amount_out);
-    return Number(amount_out);
-  } catch {
-    return false;
-  }
-}
+//     const values_out = await routerContract.getAmountsOut(
+//       ethers.utils.parseUnits(String(amountIn), token1Decimals),
+//       [address1, address2],
+//     );
+//     const amount_out = values_out[1] * 10 ** -token2Decimals;
+//     console.log('amount out: ', amount_out);
+//     return Number(amount_out);
+//   } catch {
+//     return false;
+//   }
+// }
 
 export async function swapTokens(
   address1: string,
@@ -233,18 +200,31 @@ export async function swapTokens(
   }
 }
 
+// obtain decimals
+export async function getDecimalsERC20(
+  token: ReturnType<typeof useERC20>,
+): Promise<number> {
+  try {
+    const decimals = await token?.read?.decimals() as number;
+    return decimals
+  } catch {
+    console.log('No tokenDecimals function for this token, set to 0');
+    return 0;
+  }
+}
+
+// use wagmi to obtain balance and symbol
 export async function getBalanceAndSymbolByWagmi(
   userAddress: Address,
   address: Address,
   weth_address: Address,
   coins: CoinListTypes[],
   balanceData: UseBalanceReturnType,
-  contract: ReturnType<typeof useERCContract>,
+  contract: ReturnType<typeof useERC20>,
 ): Promise<GetBalanceAndSymbolResult> {
-  const tokenDicimals = (await contract?.read?.decimals()) as number;
+  const tokenDicimals = await getDecimalsERC20(contract);
   const balanceRaw = (await contract?.read?.balanceOf([userAddress])) as bigint;
-  const symbol = await contract?.read?.symbol() as string;
-  console.log(symbol, '你来了');
+  const symbol = (await contract?.read?.symbol()) as string;
   try {
     if (address === weth_address) {
       return {
@@ -252,6 +232,10 @@ export async function getBalanceAndSymbolByWagmi(
         symbol: coins[2]?.symbol,
       };
     } else {
+      console.log({
+        balance: formatUnits(balanceRaw, tokenDicimals),
+        symbol: symbol,
+      },'吉祥啊')
       return {
         balance: formatUnits(balanceRaw, tokenDicimals),
         symbol: symbol,
@@ -263,3 +247,14 @@ export async function getBalanceAndSymbolByWagmi(
     return false;
   }
 }
+
+// export async function getAmountOut(
+//   address1: Address,
+//   address2: Address,
+//   amountIn: bigint,
+//   routerContract: ReturnType<typeof useRouterContract>,
+//   erc20Contract: ReturnType<typeof useERC20>,
+// ){
+  
+// }
+

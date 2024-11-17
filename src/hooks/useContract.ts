@@ -1,12 +1,14 @@
 import { RouterAddress } from '@/constants/network';
 import { getContract } from '@/utils/contractHelper';
-import {useMemo } from 'react';
-import { Abi, Address } from 'viem';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Abi, Address, formatUnits } from 'viem';
 import { useChainId, useWalletClient } from 'wagmi';
 import ROUTER from '@/build/UniswapV2Router02.json';
 import FACTORY from '@/build/IUniswapV2Factory.json';
 import ERC20 from '@/build/ERC20.json';
 import { AbiType } from '@/types';
+import { getDecimalsERC20 } from '@/utils/ethereumInfoFuntion';
+import { values } from 'lodash';
 type UseContractOptions = {
   chainId?: number;
 };
@@ -40,7 +42,7 @@ export function useContract<TAbi extends Abi>(
   }, [addressOrAddressMap, abi, chainId, walletClient]);
 }
 
-export const useGetRouterContract = () => {
+export const useRouterContract = () => {
   return useContract(RouterAddress, (ROUTER as AbiType)?.abi);
 };
 
@@ -48,7 +50,8 @@ export const useGetFactory = (address: Address) => {
   return useContract(address, (FACTORY as AbiType).abi);
 };
 
-export const useERCContract = (address: Address) => {
+export const useERC20 = (address: Address) => {
   return useContract(address, (ERC20 as AbiType).abi);
 };
+
 
