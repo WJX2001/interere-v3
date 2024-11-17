@@ -2,17 +2,11 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
-import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
 import {
-  BalanceAndSymbol,
   CoinListTypes,
-  GetBalanceAndSymbolResult,
-  TokenInfoTypes,
 } from '@/types';
 import {
-  getAmountOut,
-  getBalanceAndSymbol,
   getBalanceAndSymbolByWagmi,
   getDecimalsERC20,
   getReserves,
@@ -29,7 +23,7 @@ import {
   SvgIcon,
   Typography,
 } from '@mui/material';
-import { Contract, ethers } from 'ethers';
+import {  ethers } from 'ethers';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -322,39 +316,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     }, 300);
   }, [setDebounceInputAmount]);
 
-  const handleGetInputBlanceAndSymbol = async (address: string | undefined) => {
-    const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
-      network.account as Address,
-      address as string,
-      network.provider,
-      network.signer as ethers.providers.JsonRpcSigner,
-      network.wethAddress as Address,
-      network.coins,
-    );
-    setSelectedInputToken((pre) => {
-      return {
-        ...pre,
-        balance: balanceData?.balance,
-      };
-    });
-  };
 
-  const handleGetOutputBlanceAndSymbol = async (address: Address | string) => {
-    const balanceData: BalanceAndSymbol = await getBalanceAndSymbol(
-      network.account as Address,
-      address,
-      network.provider,
-      network.signer as ethers.providers.JsonRpcSigner,
-      network.wethAddress as Address,
-      network.coins,
-    );
-    setSelectedOutputToken((pre) => {
-      return {
-        ...pre,
-        balance: balanceData?.balance,
-      };
-    });
-  };
 
   // switch reverse
   const onSwitchReserves = () => {
