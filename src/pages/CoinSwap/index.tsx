@@ -4,10 +4,11 @@ import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput'
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { NetWorkType } from '@/components/Web3Provider';
 import { COINLISTS } from '@/constants';
-import { BalanceAndSymbol, CoinListTypes, TokenInfoTypes } from '@/types';
+import { BalanceAndSymbol, CoinListTypes, GetBalanceAndSymbolResult, TokenInfoTypes } from '@/types';
 import {
   getAmountOut,
   getBalanceAndSymbol,
+  getBalanceAndSymbolByWagmi,
   getReserves,
   swapTokens,
 } from '@/utils/ethereumInfoFuntion';
@@ -25,14 +26,24 @@ import {
 import { Contract, ethers } from 'ethers';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { useEffect, useMemo, useState } from 'react';
-import { Address } from 'viem';
-import { useChainId } from 'wagmi';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Address, formatUnits } from 'viem';
+import { useAccount, useBalance, useChainId } from 'wagmi';
+import { useERCContract, useGetBalanceAndSymbol } from '@/hooks/useContract';
 interface Props {
-  network: NetWorkType;
+  network: {
+    wethAddress: Address;
+    coins: CoinListTypes[];
+    factory: unknown;
+  };
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
   const currentChainId = useChainId();
+  const { address: userAddress } = useAccount();
+  const balanceData = useBalance({
+    address: userAddress,
+  });
+
   const { enqueueSnackbar } = useSnackbar();
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
@@ -46,128 +57,180 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   // Stores the current reserves in the liquidity pool between selectedInputToken and selectedOutputToken
   const [reserves, setReserves] = useState<string[]>(['0.0', '0.0']);
-
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    setTimeout(() => {
-      handleGetInputBlanceAndSymbol(selectedInputToken.address);
-      handleGetOutputBlanceAndSymbol(selectedOutputToken.address);
-    }, 1000);
-  }, []);
+  const erc20TokenInputContract = useERCContract(selectedInputToken.address);
+  const erc20TokenOutputContract = useERCContract(selectedOutputToken.address);
 
-  useEffect(() => {
-    console.log(
-      'Trying to get Reserves between:\n' +
-        selectedInputToken.address +
-        '\n' +
-        selectedOutputToken.address,
+  const handleGetInputSymbolAndBalance = useCallback(async () => {
+    const res = await getBalanceAndSymbolByWagmi(
+      userAddress as Address,
+      selectedInputToken?.address,
+      network.wethAddress,
+      network.coins,
+      balanceData,
+      erc20TokenInputContract,
     );
-    if (selectedInputToken.address && selectedOutputToken.address) {
-      getReserves(
-        selectedInputToken.address,
-        selectedOutputToken.address,
-        network.factory as Contract,
-        network.signer as ethers.providers.JsonRpcSigner,
-        network.account as Address,
-      ).then((data) => setReserves(data));
-    }
+    console.log(res, 22);
   }, [
-    selectedInputToken.address,
-    selectedOutputToken.address,
-    network.account,
-    network.factory,
-    network.router,
-    network.signer,
+    erc20TokenInputContract,
+    userAddress,
+    network,
+    balanceData,
+    selectedInputToken,
   ]);
 
-  // caculate and set selectToken2 balance
-
-  useEffect(() => {
-    if (isNaN(parseFloat(debounceInputAmount))) {
-      setOutputAmount('');
-    } else if (
-      parseFloat(debounceInputAmount) &&
-      selectedInputToken.address &&
-      selectedOutputToken.address
-    ) {
-      getAmountOut(
-        selectedInputToken.address,
-        selectedOutputToken.address,
-        debounceInputAmount,
-        network.router as Contract,
-        network.signer as ethers.providers.JsonRpcSigner,
-      )
-        .then((amount) => {
-          console.log('我看看总额', amount);
-          setOutputAmount((amount as number).toFixed(7));
-        })
-        .catch(() => {
-          setOutputAmount('0xNA');
-        });
-    } else {
-      setOutputAmount('');
+  const handleGetOutputSymbolAndBalance = useCallback(async () => {
+    const res = await getBalanceAndSymbolByWagmi(
+      userAddress as Address,
+      selectedOutputToken?.address,
+      network.wethAddress,
+      network.coins,
+      balanceData,
+      erc20TokenOutputContract,
+    );
+    if (res) {
+      const { balance, symbol } = res;
+      setSelectedOutputToken((pre) => {
+        return {
+          ...pre,
+          balance,
+          symbol,
+        };
+      });
     }
   }, [
-    debounceInputAmount,
-    selectedInputToken.address,
-    selectedOutputToken.address,
+    userAddress,
+    network,
+    balanceData,
+    selectedOutputToken,
+    erc20TokenOutputContract,
   ]);
 
   useEffect(() => {
-    const coinTimeout = setTimeout(() => {
-      console.log('Checking balances...');
+    handleGetInputSymbolAndBalance();
+    handleGetOutputSymbolAndBalance();
+  }, [handleGetInputSymbolAndBalance, handleGetOutputSymbolAndBalance]);
 
-      if (
-        selectedInputToken.address &&
-        selectedOutputToken.address &&
-        network.account
-      ) {
-        getReserves(
-          selectedInputToken.address,
-          selectedOutputToken.address,
-          network.factory,
-          network.signer,
-          network.account,
-        ).then((data) => setReserves(data));
-      }
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     handleGetInputBlanceAndSymbol(selectedInputToken.address);
+  //     handleGetOutputBlanceAndSymbol(selectedOutputToken.address);
+  //   }, 1000);
+  // }, []);
 
-      if (selectedInputToken.address && network.account) {
-        getBalanceAndSymbol(
-          network.account,
-          selectedInputToken.address,
-          network.provider,
-          network.signer as ethers.providers.JsonRpcSigner,
-          network.weth.address,
-          network.coins,
-        ).then((data) => {
-          setSelectedInputToken({
-            ...selectedInputToken,
-            balance: data.balance,
-          });
-        });
-      }
-      if (selectedOutputToken.address && network.account) {
-        getBalanceAndSymbol(
-          network.account,
-          selectedOutputToken.address,
-          network.provider,
-          network.signer as ethers.providers.JsonRpcSigner,
-          network.weth.address,
-          network.coins,
-        ).then((data) => {
-          setSelectedOutputToken({
-            ...selectedOutputToken,
-            balance: data.balance,
-          });
-        }).catch((e) => {
-          console.log(e, 'error')
-        }) ;
-      }
-    }, 10000);
+  // useEffect(() => {
+  //   console.log(
+  //     'Trying to get Reserves between:\n' +
+  //       selectedInputToken.address +
+  //       '\n' +
+  //       selectedOutputToken.address,
+  //   );
+  //   if (selectedInputToken.address && selectedOutputToken.address) {
+  //     getReserves(
+  //       selectedInputToken.address,
+  //       selectedOutputToken.address,
+  //       network.factory as Contract,
+  //       network.signer as ethers.providers.JsonRpcSigner,
+  //       network.account as Address,
+  //     ).then((data) => setReserves(data));
+  //   }
+  // }, [
+  //   selectedInputToken.address,
+  //   selectedOutputToken.address,
+  //   network.account,
+  //   network.factory,
+  //   network.router,
+  //   network.signer,
+  // ]);
 
-    return () => clearTimeout(coinTimeout);
-  });
+  // // caculate and set selectToken2 balance
+
+  // useEffect(() => {
+  //   if (isNaN(parseFloat(debounceInputAmount))) {
+  //     setOutputAmount('');
+  //   } else if (
+  //     parseFloat(debounceInputAmount) &&
+  //     selectedInputToken.address &&
+  //     selectedOutputToken.address
+  //   ) {
+  //     getAmountOut(
+  //       selectedInputToken.address,
+  //       selectedOutputToken.address,
+  //       debounceInputAmount,
+  //       network.router as Contract,
+  //       network.signer as ethers.providers.JsonRpcSigner,
+  //     )
+  //       .then((amount) => {
+  //         console.log('我看看总额', amount);
+  //         setOutputAmount((amount as number).toFixed(7));
+  //       })
+  //       .catch(() => {
+  //         setOutputAmount('0xNA');
+  //       });
+  //   } else {
+  //     setOutputAmount('');
+  //   }
+  // }, [
+  //   debounceInputAmount,
+  //   selectedInputToken.address,
+  //   selectedOutputToken.address,
+  // ]);
+
+  // useEffect(() => {
+  //   const coinTimeout = setTimeout(() => {
+  //     console.log('Checking balances...');
+
+  //     if (
+  //       selectedInputToken.address &&
+  //       selectedOutputToken.address &&
+  //       network.account
+  //     ) {
+  //       getReserves(
+  //         selectedInputToken.address,
+  //         selectedOutputToken.address,
+  //         network.factory,
+  //         network.signer,
+  //         network.account,
+  //       ).then((data) => setReserves(data));
+  //     }
+
+  //     if (selectedInputToken.address && network.account) {
+  //       getBalanceAndSymbol(
+  //         network.account,
+  //         selectedInputToken.address,
+  //         network.provider,
+  //         network.signer as ethers.providers.JsonRpcSigner,
+  //         network.weth.address,
+  //         network.coins,
+  //       ).then((data) => {
+  //         setSelectedInputToken({
+  //           ...selectedInputToken,
+  //           balance: data.balance,
+  //         });
+  //       });
+  //     }
+  //     if (selectedOutputToken.address && network.account) {
+  //       getBalanceAndSymbol(
+  //         network.account,
+  //         selectedOutputToken.address,
+  //         network.provider,
+  //         network.signer as ethers.providers.JsonRpcSigner,
+  //         network.weth.address,
+  //         network.coins,
+  //       ).then((data) => {
+  //         setSelectedOutputToken({
+  //           ...selectedOutputToken,
+  //           balance: data.balance,
+  //         });
+  //       }).catch((e) => {
+  //         console.log(e, 'error')
+  //       }) ;
+  //     }
+  //   }, 10000);
+
+  //   return () => clearTimeout(coinTimeout);
+  // });
 
   // Turns the coin's reserves into something nice and readable
   const formatReserve = (reserve: string, symbol: string) => {
@@ -175,12 +238,12 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     else return '0.0';
   };
 
-  const handleSelectedInputToken = (token: TokenInfoTypes) => {
+  const handleSelectedInputToken = (token: CoinListTypes) => {
     setSelectedInputToken(token);
     handleGetInputBlanceAndSymbol(token.address);
   };
 
-  const handleSelectedOutputToken = (token: TokenInfoTypes) => {
+  const handleSelectedOutputToken = (token: CoinListTypes) => {
     setSelectedOutputToken(token);
     handleGetOutputBlanceAndSymbol(token.address);
   };
@@ -296,150 +359,151 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   };
 
   return (
-    <>
-      <Box
-        sx={(theme) => ({
-          paddingTop: theme.spacing(12),
-          display: 'flex', // 启用弹性布局
-          justifyContent: 'center', // 水平居中
-          alignItems: 'center', // 垂直居中
-        })}
-      >
-        <Paper
-          sx={(theme) => ({
-            // maxWidth: '380px',
-            padding: theme.spacing(6),
-            maxWidth: { xs: '359px', xsm: '420px' },
-            maxHeight: 'calc(100vh - 20px)',
-            overflowY: 'auto',
-            width: '100%',
-          })}
-        >
-          <Typography variant="h2" sx={{ mb: 6 }}>
-            Switch tokens
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              gap: '15px',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-            }}
-          >
-            <SwitchAssetInput
-              value={inputAmount}
-              chainId={currentChainId}
-              // loading={
-              //   debounceInputAmount !== '0' && debounceInputAmount !== ''
-              // }
-              selectedAsset={selectedInputToken}
-              assets={COINLISTS?.filter(
-                (token) => token.address !== selectedOutputToken.address,
-              )}
-              onSelect={handleSelectedInputToken}
-              onChange={handleInputChange}
-            />
-            <IconButton
-              onClick={onSwitchReserves}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                position: 'absolute',
-                backgroundColor: 'background.paper',
-                '&:hover': { backgroundColor: 'background.surface' },
-              }}
-            >
-              <SvgIcon
-                sx={{
-                  color: 'primary.main',
-                  fontSize: '18px',
-                }}
-              >
-                <SwitchVerticalIcon />
-              </SvgIcon>
-            </IconButton>
-            <SwitchAssetInput
-              value={outputAmount}
-              chainId={currentChainId}
-              selectedAsset={selectedOutputToken}
-              disableInput={true}
-              assets={COINLISTS?.filter(
-                (token) => token.address !== selectedInputToken.address,
-              )}
-              onSelect={handleSelectedOutputToken}
-            />
-          </Box>
+    // <>
+    //   <Box
+    //     sx={(theme) => ({
+    //       paddingTop: theme.spacing(12),
+    //       display: 'flex', // 启用弹性布局
+    //       justifyContent: 'center', // 水平居中
+    //       alignItems: 'center', // 垂直居中
+    //     })}
+    //   >
+    //     <Paper
+    //       sx={(theme) => ({
+    //         // maxWidth: '380px',
+    //         padding: theme.spacing(6),
+    //         maxWidth: { xs: '359px', xsm: '420px' },
+    //         maxHeight: 'calc(100vh - 20px)',
+    //         overflowY: 'auto',
+    //         width: '100%',
+    //       })}
+    //     >
+    //       <Typography variant="h2" sx={{ mb: 6 }}>
+    //         Switch tokens
+    //       </Typography>
+    //       <Box
+    //         sx={{
+    //           display: 'flex',
+    //           gap: '15px',
+    //           flexDirection: 'column',
+    //           alignItems: 'center',
+    //           justifyContent: 'center',
+    //           position: 'relative',
+    //         }}
+    //       >
+    //         <SwitchAssetInput
+    //           value={inputAmount}
+    //           chainId={currentChainId}
+    //           // loading={
+    //           //   debounceInputAmount !== '0' && debounceInputAmount !== ''
+    //           // }
+    //           selectedAsset={selectedInputToken}
+    //           assets={COINLISTS?.filter(
+    //             (token) => token.address !== selectedOutputToken.address,
+    //           )}
+    //           onSelect={handleSelectedInputToken}
+    //           onChange={handleInputChange}
+    //         />
+    //         <IconButton
+    //           onClick={onSwitchReserves}
+    //           sx={{
+    //             border: '1px solid',
+    //             borderColor: 'divider',
+    //             position: 'absolute',
+    //             backgroundColor: 'background.paper',
+    //             '&:hover': { backgroundColor: 'background.surface' },
+    //           }}
+    //         >
+    //           <SvgIcon
+    //             sx={{
+    //               color: 'primary.main',
+    //               fontSize: '18px',
+    //             }}
+    //           >
+    //             <SwitchVerticalIcon />
+    //           </SvgIcon>
+    //         </IconButton>
+    //         <SwitchAssetInput
+    //           value={outputAmount}
+    //           chainId={currentChainId}
+    //           selectedAsset={selectedOutputToken}
+    //           disableInput={true}
+    //           assets={COINLISTS?.filter(
+    //             (token) => token.address !== selectedInputToken.address,
+    //           )}
+    //           onSelect={handleSelectedOutputToken}
+    //         />
+    //       </Box>
 
-          <Box>
-            {/* <Divider sx={{ mt: 4 }} /> */}
-            <Box
-              sx={{
-                display: 'flex',
-                gap: '15px',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 4,
-              }}
-            >
-              <Typography variant="h3" sx={{ mt: 6 }}>
-                Reserves
-              </Typography>
-            </Box>
-            <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
-              <Grid2 size={6}>
-                {formatReserve(reserves[0], selectedInputToken.symbol)}
-              </Grid2>
-              <Grid2 size={6}>
-                {formatReserve(reserves[1], selectedOutputToken.symbol)}
-              </Grid2>
-            </Grid2>
-          </Box>
-          <Divider sx={{ mt: 4 }} />
-          <SwitchErrors
-            balance={selectedInputToken?.balance as string}
-            inputAmount={inputAmount}
-          />
-          <Box
-            sx={{
-              marginTop: '38px',
-              display: 'flex',
-              alignContent: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-            }}
-          >
-            {/* <Button variant="contained" sx={{ width: '100%' }}>
-              Switch
-            </Button> */}
-            {/* <LoadingButton
-              // loading={loading}
-              loading={true}
-              valid={isButtonEnabled()}
-              onClick={handleSwap}
-              // sx={{
-                
-              // }}
-            >
-              Switch
-            </LoadingButton> */}
-            <LoadingButton
-              sx={{ width: '100%' }}
-              variant="contained"
-              loading={loading}
-              disabled={loading || !isButtonEnabled()}
-              onClick={handleSwap}
-            >
-              Switch
-            </LoadingButton>
-          </Box>
+    //       <Box>
+    //         {/* <Divider sx={{ mt: 4 }} /> */}
+    //         <Box
+    //           sx={{
+    //             display: 'flex',
+    //             gap: '15px',
+    //             flexDirection: 'column',
+    //             alignItems: 'center',
+    //             justifyContent: 'center',
+    //             mb: 4,
+    //           }}
+    //         >
+    //           <Typography variant="h3" sx={{ mt: 6 }}>
+    //             Reserves
+    //           </Typography>
+    //         </Box>
+    //         <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
+    //           <Grid2 size={6}>
+    //             {formatReserve(reserves[0], selectedInputToken.symbol)}
+    //           </Grid2>
+    //           <Grid2 size={6}>
+    //             {formatReserve(reserves[1], selectedOutputToken.symbol)}
+    //           </Grid2>
+    //         </Grid2>
+    //       </Box>
+    //       <Divider sx={{ mt: 4 }} />
+    //       <SwitchErrors
+    //         balance={selectedInputToken?.balance as string}
+    //         inputAmount={inputAmount}
+    //       />
+    //       <Box
+    //         sx={{
+    //           marginTop: '38px',
+    //           display: 'flex',
+    //           alignContent: 'center',
+    //           justifyContent: 'center',
+    //           position: 'relative',
+    //         }}
+    //       >
+    //         {/* <Button variant="contained" sx={{ width: '100%' }}>
+    //           Switch
+    //         </Button> */}
+    //         {/* <LoadingButton
+    //           // loading={loading}
+    //           loading={true}
+    //           valid={isButtonEnabled()}
+    //           onClick={handleSwap}
+    //           // sx={{
 
-          {/* <SwapPoolErros / */}
-        </Paper>
-      </Box>
-    </>
+    //           // }}
+    //         >
+    //           Switch
+    //         </LoadingButton> */}
+    //         <LoadingButton
+    //           sx={{ width: '100%' }}
+    //           variant="contained"
+    //           loading={loading}
+    //           disabled={loading || !isButtonEnabled()}
+    //           onClick={handleSwap}
+    //         >
+    //           Switch
+    //         </LoadingButton>
+    //       </Box>
+
+    //       {/* <SwapPoolErros / */}
+    //     </Paper>
+    //   </Box>
+    // </>
+    <>22222</>
   );
 };
 

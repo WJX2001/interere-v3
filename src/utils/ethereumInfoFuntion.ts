@@ -3,8 +3,10 @@ import ROUTER from '@/build/UniswapV2Router02.json';
 import ERC20 from '@/build/ERC20.json';
 import FACTORY from '@/build/IUniswapV2Factory.json';
 import PAIR from '@/build/IUniswapV2Pair.json';
-import { Address } from 'viem';
-import { CoinListTypes } from '@/types';
+import { Address, formatUnits } from 'viem';
+import { CoinListTypes, GetBalanceAndSymbolResult } from '@/types';
+import { useERCContract } from '@/hooks/useContract';
+import { UseBalanceReturnType } from 'wagmi';
 export async function getNetwork(provider: ethers.providers.Web3Provider) {
   const network = await provider.getNetwork();
   return network.chainId;
@@ -169,16 +171,15 @@ export async function getAmountOut(
 
     const values_out = await routerContract.getAmountsOut(
       ethers.utils.parseUnits(String(amountIn), token1Decimals),
-      [address1, address2]
+      [address1, address2],
     );
-    const amount_out = values_out[1]*10**(-token2Decimals);
-    console.log('amount out: ', amount_out)
+    const amount_out = values_out[1] * 10 ** -token2Decimals;
+    console.log('amount out: ', amount_out);
     return Number(amount_out);
   } catch {
     return false;
   }
 }
-
 
 export async function swapTokens(
   address1: string,
@@ -186,7 +187,7 @@ export async function swapTokens(
   amount: string,
   routerContract: Contract,
   accountAddress: string,
-  signer: ethers.providers.JsonRpcSigner
+  signer: ethers.providers.JsonRpcSigner,
 ) {
   const tokens = [address1, address2];
   const time = Math.floor(Date.now() / 1000) + 200000;
@@ -197,7 +198,7 @@ export async function swapTokens(
   const amountIn = ethers.utils.parseUnits(amount, tokenDecimals);
   const amountOut = await routerContract.callStatic.getAmountsOut(
     amountIn,
-    tokens
+    tokens,
   );
 
   await token1.approve(routerContract.address, amountIn);
@@ -210,7 +211,7 @@ export async function swapTokens(
       tokens,
       accountAddress,
       deadline,
-      { value: amountIn }
+      { value: amountIn },
     );
   } else if (address2 === wethAddress) {
     // Token -> Eth
@@ -219,7 +220,7 @@ export async function swapTokens(
       amountOut[1],
       tokens,
       accountAddress,
-      deadline
+      deadline,
     );
   } else {
     await routerContract.swapExactTokensForTokens(
@@ -227,7 +228,38 @@ export async function swapTokens(
       amountOut[1],
       tokens,
       accountAddress,
-      deadline
+      deadline,
     );
+  }
+}
+
+export async function getBalanceAndSymbolByWagmi(
+  userAddress: Address,
+  address: Address,
+  weth_address: Address,
+  coins: CoinListTypes[],
+  balanceData: UseBalanceReturnType,
+  contract: ReturnType<typeof useERCContract>,
+): Promise<GetBalanceAndSymbolResult> {
+  const tokenDicimals = (await contract?.read?.decimals()) as number;
+  const balanceRaw = (await contract?.read?.balanceOf([userAddress])) as bigint;
+  const symbol = await contract?.read?.symbol() as string;
+  console.log(symbol, '你来了');
+  try {
+    if (address === weth_address) {
+      return {
+        balance: formatUnits(balanceData?.data?.value as bigint, 18),
+        symbol: coins[2]?.symbol,
+      };
+    } else {
+      return {
+        balance: formatUnits(balanceRaw, tokenDicimals),
+        symbol: symbol,
+      };
+    }
+  } catch (error) {
+    console.log('The getBalanceAndSymbol function had an error!');
+    console.log(error);
+    return false;
   }
 }

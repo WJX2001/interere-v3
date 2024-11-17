@@ -1,4 +1,4 @@
-import { Abi } from 'viem';
+import { Abi, Address } from 'viem';
 
 export interface MenuItemsTypes {
   title: string;
@@ -9,7 +9,7 @@ export interface MenuItemsTypes {
 export interface CoinListTypes {
   name: string;
   symbol: string;
-  address: string;
+  address: Address;
   logoURI: string;
   balance?: string;
 }
@@ -31,3 +31,8 @@ export type BalanceAndSymbol = {
   symbol: string;
   balance: string;
 };
+
+export type GetBalanceAndSymbolResult = {
+  balance: string;
+  symbol: string;
+} | false;
