@@ -29,12 +29,12 @@ import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
-import { useERCContract, useGetBalanceAndSymbol } from '@/hooks/useContract';
+import { useERCContract, useGetFactory } from '@/hooks/useContract';
 interface Props {
   network: {
     wethAddress: Address;
     coins: CoinListTypes[];
-    factory: unknown;
+    factory: ReturnType<typeof useGetFactory>;
   };
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
