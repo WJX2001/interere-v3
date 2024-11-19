@@ -22,12 +22,13 @@ import {
 import { ethers } from 'ethers';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import {
   useERC20,
   useGetFactory,
+  useGetReserves,
   useRouterContract,
 } from '@/hooks/useContract';
 import { uuid } from '@/utils';
@@ -58,26 +59,23 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
 
   // Stores the current reserves in the liquidity pool between selectedInputToken and selectedOutputToken
-  const [reserves, setReserves] = useState<string[]>(['0.0', '0.0']);
+ 
   const [loading, setLoading] = useState<boolean>(false);
-
   // output loading
   const [outputLoading, setOutputLoading] = useState<boolean>(true);
   const [randomNumber, setRandomNumber] = useState<string>(uuid());
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
+  const { reserveArr } = useGetReserves(
+    selectedInputToken.address,
+    selectedOutputToken.address,
+    network.factory,
+  );
 
-
-
-  // const pairAddress = useMemo(async () => {
-  //   if (network?.factory) {
-  //     try{
-
-  //     }catch(e) {}
-  //   }
-  // }, [network.factory, selectedInputToken, selectedOutputToken]);
-
-  // console.log(pairAddress,'你怎么事')
+  useEffect(() => {
+    console.log(reserveArr,'我卡开你')
+  },[reserveArr])
+  const [reserves, setReserves] = useState<string[]>(reserveArr);
 
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
@@ -138,37 +136,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     handleGetOutputSymbolAndBalance();
   }, [randomNumber]);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     handleGetInputBlanceAndSymbol(selectedInputToken.address);
-  //     handleGetOutputBlanceAndSymbol(selectedOutputToken.address);
-  //   }, 1000);
-  // }, []);
-
-  // useEffect(() => {
-  //   console.log(
-  //     'Trying to get Reserves between:\n' +
-  //       selectedInputToken.address +
-  //       '\n' +
-  //       selectedOutputToken.address,
-  //   );
-  //   if (selectedInputToken.address && selectedOutputToken.address) {
-  //     getReserves(
-  //       selectedInputToken.address,
-  //       selectedOutputToken.address,
-  //       network.factory as Contract,
-  //       network.signer as ethers.providers.JsonRpcSigner,
-  //       network.account as Address,
-  //     ).then((data) => setReserves(data));
-  //   }
-  // }, [
-  //   selectedInputToken.address,
-  //   selectedOutputToken.address,
-  //   network.account,
-  //   network.factory,
-  //   network.router,
-  //   network.signer,
-  // ]);
 
   const fetchData = async () => {
     try {
@@ -213,10 +180,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         selectedOutputToken.address,
     );
 
-    if(selectedInputToken.address && selectedOutputToken.address) {
-
+    if (selectedInputToken.address && selectedOutputToken.address) {
     }
-
   }, []);
 
   // useEffect(() => {
@@ -494,10 +459,10 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             </Box>
             <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
               <Grid2 size={6}>
-                {formatReserve(reserves[0], selectedInputToken.symbol)}
+                {formatReserve(reserveArr[0], selectedInputToken.symbol)}
               </Grid2>
               <Grid2 size={6}>
-                {formatReserve(reserves[1], selectedOutputToken.symbol)}
+                {formatReserve(reserveArr[1], selectedOutputToken.symbol)}
               </Grid2>
             </Grid2>
           </Box>
@@ -529,15 +494,15 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             >
               Switch
             </LoadingButton> */}
-            {/* <LoadingButton
+            <LoadingButton
               sx={{ width: '100%' }}
               variant="contained"
               loading={loading}
               disabled={loading || !isButtonEnabled()}
-              onClick={handleSwap}
+              // onClick={handleSwap}
             >
               Switch
-            </LoadingButton> */}
+            </LoadingButton>
           </Box>
 
           {/* <SwapPoolErros / */}

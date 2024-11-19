@@ -64,19 +64,19 @@ export const useGetReserves = (
   factory: ReturnType<typeof useGetFactory>,
 ) => {
   const { address } = useAccount();
-  // const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
-  const pairAddressRef = useRef<Address>(zeroAddress);
-  const pair = usePair(pairAddressRef.current);
   const ERC20_1 = useERC20(address1);
   const ERC20_2 = useERC20(address2);
-
+  const [reserves, setReserves] = useState<string[]>(['0', '0', '0']);
+  const [pairAddress, setPairAddress] = useState<Address>(zeroAddress)
+  const pair = usePair(pairAddress);
   const fetchPairAddress = useCallback(async () => {
     try {
       const pairAddress = (await factory?.read?.getPair([
         address1,
         address2,
       ])) as Address;
-      pairAddressRef.current = pairAddress;
+      console.log(pairAddress);
+      setPairAddress(pairAddress)
 
       if (pairAddress !== '0x0000000000000000000000000000000000000000') {
         const reservesRaw = await fetchReserves(
@@ -92,25 +92,18 @@ export const useGetReserves = (
         ])) as bigint;
         const liquidityTokens = formatEther(liquidityTokens_BN);
         const res = [
-          reservesRaw[0],
-          reservesRaw[1],
+          Number(reservesRaw[0]).toPrecision(6),
+          Number(reservesRaw[1]).toPrecision(6),
           liquidityTokens,
         ] as string[];
-        // setReserves(res);
-        return {
-          reserveRes: res,
-        };
+        setReserves(res);
       } else {
         console.log('no reserves yet');
-        return {
-          reserveRes: ['0', '0', '0'],
-        };
+        setReserves(['0', '0', '0']);
       }
     } catch (err) {
       console.log(err);
-      return {
-        reserveRes: ['0', '0', '0'],
-      };
+      setReserves(['0', '0', '0']);
     }
   }, [factory, address1, address2, ERC20_1, ERC20_2, pair, address]);
 
@@ -118,5 +111,9 @@ export const useGetReserves = (
     if (factory) {
       fetchPairAddress();
     }
-  }, [factory, fetchPairAddress]);
+  }, [factory,fetchPairAddress]);
+
+  return {
+    reserveArr: reserves,
+  };
 };

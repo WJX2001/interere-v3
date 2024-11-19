@@ -231,13 +231,6 @@ export async function getBalanceAndSymbolByWagmi(
         symbol: coins[2]?.symbol,
       };
     } else {
-      console.log(
-        {
-          balance: formatUnits(balanceRaw, tokenDicimals),
-          symbol: symbol,
-        },
-        '吉祥啊',
-      );
       return {
         balance: formatUnits(balanceRaw, tokenDicimals),
         symbol: symbol,
@@ -257,13 +250,13 @@ export async function fetchReserves(
   ERC20Coin2: ReturnType<typeof useERC20>,
   pair: ReturnType<typeof usePair>,
 ) {
+  
   try {
     const decimal1 = await getDecimalsERC20(ERC20Coin1);
     const decimal2 = await getDecimalsERC20(ERC20Coin2);
-
     // Get reserves
     const reserveRaw = (await pair?.read?.getReserves()) as bigint[];
-
+    console.log(reserveRaw,'我吉祥');
     // Put the results in the right order
     const results = [
       (await pair?.read?.token0()) === address1 ? reserveRaw[0] : reserveRaw[1],
@@ -274,7 +267,6 @@ export async function fetchReserves(
       formatUnits(results[1], decimal2),
     ];
   } catch (error) {
-    console.log('error!');
     console.log(error);
     return [0, 0];
   }
