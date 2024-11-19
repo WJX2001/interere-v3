@@ -1,6 +1,6 @@
 import { RouterAddress } from '@/constants/network';
 import { getContract } from '@/utils/contractHelper';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Abi, Address, formatEther, formatUnits, zeroAddress } from 'viem';
 import { useAccount, useChainId, useWalletClient } from 'wagmi';
 import ROUTER from '@/build/UniswapV2Router02.json';
@@ -64,11 +64,11 @@ export const useGetReserves = (
   factory: ReturnType<typeof useGetFactory>,
 ) => {
   const { address } = useAccount();
-  const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
-  const pair = usePair(pairAddress);
+  // const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
+  const pairAddressRef = useRef<Address>(zeroAddress);
+  const pair = usePair(pairAddressRef.current);
   const ERC20_1 = useERC20(address1);
   const ERC20_2 = useERC20(address2);
-  const [reseves, setReserves] = useState<string[]>([]);
 
   const fetchPairAddress = useCallback(async () => {
     try {
@@ -76,6 +76,7 @@ export const useGetReserves = (
         address1,
         address2,
       ])) as Address;
+      pairAddressRef.current = pairAddress;
 
       if (pairAddress !== '0x0000000000000000000000000000000000000000') {
         const reservesRaw = await fetchReserves(
@@ -95,13 +96,21 @@ export const useGetReserves = (
           reservesRaw[1],
           liquidityTokens,
         ] as string[];
-        setReserves(res);
+        // setReserves(res);
+        return {
+          reserveRes: res,
+        };
       } else {
         console.log('no reserves yet');
-        setReserves(['0', '0', '0']);
+        return {
+          reserveRes: ['0', '0', '0'],
+        };
       }
     } catch (err) {
       console.log(err);
+      return {
+        reserveRes: ['0', '0', '0'],
+      };
     }
   }, [factory, address1, address2, ERC20_1, ERC20_2, pair, address]);
 
