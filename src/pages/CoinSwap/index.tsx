@@ -3,14 +3,10 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { COINLISTS } from '@/constants';
-import {
-  CoinListTypes,
-} from '@/types';
+import { CoinListTypes } from '@/types';
 import {
   getBalanceAndSymbolByWagmi,
   getDecimalsERC20,
-  getReserves,
-  swapTokens,
 } from '@/utils/ethereumInfoFuntion';
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
@@ -23,7 +19,7 @@ import {
   SvgIcon,
   Typography,
 } from '@mui/material';
-import {  ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -31,7 +27,6 @@ import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import {
   useERC20,
-  useGetAmountOut,
   useGetFactory,
   useRouterContract,
 } from '@/hooks/useContract';
@@ -71,6 +66,19 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const [randomNumber, setRandomNumber] = useState<string>(uuid());
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
+
+
+
+  // const pairAddress = useMemo(async () => {
+  //   if (network?.factory) {
+  //     try{
+
+  //     }catch(e) {}
+  //   }
+  // }, [network.factory, selectedInputToken, selectedOutputToken]);
+
+  // console.log(pairAddress,'你怎么事')
+
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,
@@ -125,8 +133,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     erc20TokenOutputContract,
   ]);
 
-
-
   useEffect(() => {
     handleGetInputSymbolAndBalance();
     handleGetOutputSymbolAndBalance();
@@ -164,18 +170,18 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   //   network.signer,
   // ]);
 
-  // // caculate and set selectToken2 balance
-
   const fetchData = async () => {
     try {
       const decimal1 = await getDecimalsERC20(erc20TokenInputContract);
       const decimal2 = await getDecimalsERC20(erc20TokenOutputContract);
       const amountIn = ethers.utils.parseUnits(debounceInputAmount, decimal1);
-      const values_out = await network?.router?.read.getAmountsOut([
+      const values_out = (await network?.router?.read.getAmountsOut([
         amountIn,
         [selectedInputToken.address, selectedOutputToken.address],
-      ]);
-      // const amount_out = 
+      ])) as bigint[];
+      const amount_out = formatUnits(values_out[1], decimal2);
+      setOutputAmount(amount_out);
+      setOutputLoading(false);
     } catch {
       setOutputAmount('0xNA');
       setOutputLoading(false);
@@ -198,6 +204,20 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     selectedInputToken?.address,
     selectedOutputToken?.address,
   ]);
+
+  useEffect(() => {
+    console.log(
+      'Trying to get Reserves between:\n' +
+        selectedInputToken.address +
+        '\n' +
+        selectedOutputToken.address,
+    );
+
+    if(selectedInputToken.address && selectedOutputToken.address) {
+
+    }
+
+  }, []);
 
   // useEffect(() => {
   //   if (isNaN(parseFloat(debounceInputAmount))) {
@@ -293,11 +313,12 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
 
   const handleSelectedInputToken = (token: CoinListTypes) => {
     setSelectedInputToken(token);
+    setRandomNumber(uuid());
   };
 
   const handleSelectedOutputToken = (token: CoinListTypes) => {
     setSelectedOutputToken(token);
-    setRandomNumber(uuid())
+    setRandomNumber(uuid());
   };
 
   const handleInputChange = async (value: string) => {
@@ -315,8 +336,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       setDebounceInputAmount(value);
     }, 300);
   }, [setDebounceInputAmount]);
-
-
 
   // switch reverse
   const onSwitchReserves = () => {

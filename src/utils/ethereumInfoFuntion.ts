@@ -3,14 +3,13 @@ import ERC20 from '@/build/ERC20.json';
 import PAIR from '@/build/IUniswapV2Pair.json';
 import { Address, formatUnits } from 'viem';
 import { CoinListTypes, GetBalanceAndSymbolResult } from '@/types';
-import { useERC20, useRouterContract } from '@/hooks/useContract';
+import { useERC20, useGetFactory, usePair, useRouterContract } from '@/hooks/useContract';
 import { UseBalanceReturnType } from 'wagmi';
 
-
-export async function getDecimals(token: Contract) {
+export async function getDecimals(token: Contract): Promise<number> {
   const decimals = await token
     .decimals()
-    .then((res) => {
+    .then((res: number) => {
       return res;
     })
     .catch(() => {
@@ -53,74 +52,74 @@ export async function getBalanceAndSymbol(
   }
 }
 
-export async function fetchReserves(
-  address1: string,
-  address2: string,
-  pair: Contract,
-  signer: ethers.providers.JsonRpcSigner,
-) {
-  try {
-    // Get decimals for each coin
-    const coin1 = new Contract(address1, ERC20.abi, signer);
-    const coin2 = new Contract(address2, ERC20.abi, signer);
+// export async function fetchReserves(
+//   address1: string,
+//   address2: string,
+//   pair: Contract,
+//   signer: ethers.providers.JsonRpcSigner,
+// ) {
+//   try {
+//     // Get decimals for each coin
+//     const coin1 = new Contract(address1, ERC20.abi, signer);
+//     const coin2 = new Contract(address2, ERC20.abi, signer);
 
-    const coin1Decimals = await getDecimals(coin1);
-    const coin2Decimals = await getDecimals(coin2);
+//     const coin1Decimals = await getDecimals(coin1);
+//     const coin2Decimals = await getDecimals(coin2);
 
-    // Get reserves
-    const reservesRaw = await pair.getReserves();
+//     // Get reserves
+//     const reservesRaw = await pair.getReserves();
 
-    // Put the results in the right order
-    const results = [
-      (await pair.token0()) === address1 ? reservesRaw[0] : reservesRaw[1],
-      (await pair.token1()) === address2 ? reservesRaw[1] : reservesRaw[0],
-    ];
+//     // Put the results in the right order
+//     const results = [
+//       (await pair.token0()) === address1 ? reservesRaw[0] : reservesRaw[1],
+//       (await pair.token1()) === address2 ? reservesRaw[1] : reservesRaw[0],
+//     ];
 
-    // Scale each to the right decimal place
-    return [
-      results[0] * 10 ** -coin1Decimals,
-      results[1] * 10 ** -coin2Decimals,
-    ];
-  } catch (err) {
-    console.log('error!');
-    console.log(err);
-    return [0, 0];
-  }
-}
+//     // Scale each to the right decimal place
+//     return [
+//       results[0] * 10 ** -coin1Decimals,
+//       results[1] * 10 ** -coin2Decimals,
+//     ];
+//   } catch (err) {
+//     console.log('error!');
+//     console.log(err);
+//     return [0, 0];
+//   }
+// }
 
-export async function getReserves(
-  address1: string,
-  address2: string,
-  factory: Contract,
-  signer: ethers.providers.JsonRpcSigner,
-  accountAddress: Address,
-) {
-  try {
-    const pairAddress = await factory.getPair(address1, address2);
-    const pair = new Contract(pairAddress, PAIR.abi, signer);
+// export async function getReserves(
+//   address1: string,
+//   address2: string,
+//   factory: Contract,
+//   signer: ethers.providers.JsonRpcSigner,
+//   accountAddress: Address,
+// ) {
+//   try {
+//     const pairAddress = await factory.getPair(address1, address2);
+//     const pair = new Contract(pairAddress, PAIR.abi, signer);
 
-    if (pairAddress !== '0x0000000000000000000000000000000000000000') {
-      const reservesRaw = await fetchReserves(address1, address2, pair, signer);
-      const liquidityTokens_BN = await pair.balanceOf(accountAddress);
-      const liquidityTokens = Number(
-        ethers.utils.formatEther(liquidityTokens_BN),
-      );
+//     if (pairAddress !== '0x0000000000000000000000000000000000000000') {
+//       const reservesRaw = await fetchReserves(address1, address2, pair, signer);
+//       const liquidityTokens_BN = await pair.balanceOf(accountAddress);
+//       const liquidityTokens = Number(
+//         ethers.utils.formatEther(liquidityTokens_BN),
+//       );
 
-      return [
-        reservesRaw[0].toPrecision(6),
-        reservesRaw[1].toPrecision(6),
-        liquidityTokens,
-      ];
-    } else {
-      console.log('no reserves yet');
-      return [0, 0, 0];
-    }
-  } catch (err) {
-    console.log('error!');
-    console.log(err);
-    return [0, 0, 0];
-  }
-}
+//       return [
+//         reservesRaw[0].toPrecision(6),
+//         reservesRaw[1].toPrecision(6),
+//         liquidityTokens,
+//       ];
+//     } else {
+//       console.log('no reserves yet');
+//       return [0, 0, 0];
+//     }
+//   } catch (err) {
+//     console.log('error!');
+//     console.log(err);
+//     return [0, 0, 0];
+//   }
+// }
 
 // export async function getAmountOut(
 //   address1: string,
@@ -205,8 +204,8 @@ export async function getDecimalsERC20(
   token: ReturnType<typeof useERC20>,
 ): Promise<number> {
   try {
-    const decimals = await token?.read?.decimals() as number;
-    return decimals
+    const decimals = (await token?.read?.decimals()) as number;
+    return decimals;
   } catch {
     console.log('No tokenDecimals function for this token, set to 0');
     return 0;
@@ -232,10 +231,13 @@ export async function getBalanceAndSymbolByWagmi(
         symbol: coins[2]?.symbol,
       };
     } else {
-      console.log({
-        balance: formatUnits(balanceRaw, tokenDicimals),
-        symbol: symbol,
-      },'吉祥啊')
+      console.log(
+        {
+          balance: formatUnits(balanceRaw, tokenDicimals),
+          symbol: symbol,
+        },
+        '吉祥啊',
+      );
       return {
         balance: formatUnits(balanceRaw, tokenDicimals),
         symbol: symbol,
@@ -248,13 +250,44 @@ export async function getBalanceAndSymbolByWagmi(
   }
 }
 
-// export async function getAmountOut(
+export async function fetchReserves(
+  address1: Address,
+  address2: Address,
+  ERC20Coin1: ReturnType<typeof useERC20>,
+  ERC20Coin2: ReturnType<typeof useERC20>,
+  pair: ReturnType<typeof usePair>,
+) {
+  try {
+    const decimal1 = await getDecimalsERC20(ERC20Coin1);
+    const decimal2 = await getDecimalsERC20(ERC20Coin2);
+
+    // Get reserves
+    const reserveRaw = (await pair?.read?.getReserves()) as bigint[];
+
+    // Put the results in the right order
+    const results = [
+      (await pair?.read?.token0()) === address1 ? reserveRaw[0] : reserveRaw[1],
+      (await pair?.read?.token1()) === address2 ? reserveRaw[1] : reserveRaw[0],
+    ];
+    return [
+      formatUnits(results[0], decimal1),
+      formatUnits(results[1], decimal2),
+    ];
+  } catch (error) {
+    console.log('error!');
+    console.log(error);
+    return [0, 0];
+  }
+}
+
+// export async function getReservesPlus(
 //   address1: Address,
 //   address2: Address,
-//   amountIn: bigint,
-//   routerContract: ReturnType<typeof useRouterContract>,
-//   erc20Contract: ReturnType<typeof useERC20>,
-// ){
-  
-// }
+//   factory: ReturnType<typeof useGetFactory>,
+//   accountAddress: Address,
+// ) {
+//   try {
+//     const pairAddress = await factory?.read?.getPair([address1, address2]);
 
+//   }
+// }
