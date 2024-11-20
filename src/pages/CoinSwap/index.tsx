@@ -143,7 +143,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       setOutputAmount(amount_out);
       setOutputLoading(false);
     } catch {
-      setOutputAmount('0xNA');
+      setOutputAmount('NA');
       setOutputLoading(false);
     }
   }, [
@@ -334,9 +334,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             }}
           >
             <SwapButton
+              coin1Balance = {selectedInputToken?.balance as string}
               token1Address={selectedInputToken.address}
               token2Address={selectedOutputToken.address}
               inputAmount={inputAmount}
+              outputAmount={outputAmount}
               erc20TokenInputContract={erc20TokenInputContract}
               network={network}
               userAddress={userAddress as Address}

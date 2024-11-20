@@ -8,7 +8,7 @@ import { getDecimalsERC20 } from '@/utils/ethereumInfoFuntion';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { BigNumber, ethers } from 'ethers';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, Hash } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
@@ -16,7 +16,9 @@ interface Props {
   token1Address: Address;
   token2Address: Address;
   inputAmount: string;
+  outputAmount: string;
   userAddress: Address;
+  coin1Balance: string;
   erc20TokenInputContract: ReturnType<typeof useERC20>;
   network: {
     wethAddress: Address;
@@ -25,7 +27,7 @@ interface Props {
     router: ReturnType<typeof useRouterContract>;
   };
   setInputAmount: (value: string) => void;
-  setDebounceInputAmount: (value: string) => void
+  setDebounceInputAmount: (value: string) => void;
 }
 
 const SwapButton: React.FC<Props> = (props) => {
@@ -36,8 +38,10 @@ const SwapButton: React.FC<Props> = (props) => {
     userAddress,
     erc20TokenInputContract,
     network,
+    outputAmount,
+    coin1Balance,
     setInputAmount,
-    setDebounceInputAmount
+    setDebounceInputAmount,
   } = props;
   const [approveHash, setApproveHas] = useState<Hash>();
   const [amountInAll, setAmountInAll] = useState<BigNumber>();
@@ -90,15 +94,18 @@ const SwapButton: React.FC<Props> = (props) => {
         try {
           await hanldeRealSwap();
           setButtonLoading(false);
-          setInputAmount("")
-          setDebounceInputAmount("")
+          setInputAmount('');
+          setDebounceInputAmount('');
           enqueueSnackbar('Transaction Successful', { variant: 'success' });
-        } catch (err){
+        } catch (err) {
           setButtonLoading(false);
-          enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
-            variant: 'error',
-            autoHideDuration: 10000,
-          });
+          enqueueSnackbar(
+            'Transaction Failed (' + (err as Error).message + ')',
+            {
+              variant: 'error',
+              autoHideDuration: 10000,
+            },
+          );
         }
       };
       tmp();
@@ -117,13 +124,31 @@ const SwapButton: React.FC<Props> = (props) => {
     setApproveHas(approveTx);
     console.log('approveTx');
   };
+
+
+  const isButtonEnabled = () => {
+    // If both coins have been selected, and a valid float has been entered which is less than the user's balance, then return true
+    const parsedInput1 = parseFloat(inputAmount);
+    const parsedInput2 = parseFloat(outputAmount);
+    console.log(parsedInput2,'test3')
+    console.log(isNaN(parsedInput2),'test2')
+    return (
+      token1Address &&
+      token2Address &&
+      !isNaN(parsedInput1) &&
+      !isNaN(parsedInput2) &&
+      0 < parsedInput1 &&
+      parsedInput1 <= parseFloat(coin1Balance)
+    );
+  };
+
   return (
     <>
       <LoadingButton
         sx={{ width: '100%' }}
         variant="contained"
         loading={buttonLoading}
-        // disabled={loading || !isButtonEnabled()}
+        disabled={buttonLoading || !isButtonEnabled()}
         onClick={handleSwap}
       >
         Switch
