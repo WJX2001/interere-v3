@@ -1,7 +1,7 @@
 import { RouterAddress } from '@/constants/network';
 import { getContract } from '@/utils/contractHelper';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Abi, Address, formatEther, formatUnits, zeroAddress } from 'viem';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Abi, Address, formatEther, zeroAddress } from 'viem';
 import { useAccount, useChainId, useWalletClient } from 'wagmi';
 import ROUTER from '@/build/UniswapV2Router02.json';
 import FACTORY from '@/build/IUniswapV2Factory.json';
@@ -75,9 +75,7 @@ export const useGetReserves = (
         address1,
         address2,
       ])) as Address;
-      console.log(pairAddress);
       setPairAddress(pairAddress)
-
       if (pairAddress !== '0x0000000000000000000000000000000000000000') {
         const reservesRaw = await fetchReserves(
           address1,

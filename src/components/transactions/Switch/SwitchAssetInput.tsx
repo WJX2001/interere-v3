@@ -17,7 +17,7 @@ import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useRef, useState } from 'react';
 import { TokenInfo } from '@/ui-config/TokenList';
 import { COINLISTS, COMMON_SWAPS } from '@/constants';
-import { TokenInfoTypes } from '@/types';
+import { CoinListTypes } from '@/types';
 export interface TokenInfoWithBalance extends TokenInfo {
   balance: string;
   oracle?: string;
@@ -30,10 +30,10 @@ interface AssetInputProps {
   disableInput?: boolean;
   maxValue?: string;
   loading?: boolean;
-  assets: TokenInfoTypes[];
-  selectedAsset: TokenInfoTypes;
+  assets: CoinListTypes[];
+  selectedAsset: CoinListTypes;
   isMaxSelected?: boolean;
-  onSelect?: (asset: TokenInfoTypes) => void;
+  onSelect?: (asset: CoinListTypes) => void;
   onChange?: (value: string) => void;
 }
 
@@ -53,7 +53,6 @@ const SwitchAssetInput = ({
     COMMON_SWAPS.includes(item.symbol),
   );
   const inputRef = useRef<HTMLDivElement>(null);
-  const [loadingNewAsset, setLoadingNewAsset] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -63,7 +62,7 @@ const SwitchAssetInput = ({
   };
 
   // select asset
-  const handleSelect = (asset: TokenInfoTypes) => {
+  const handleSelect = (asset: CoinListTypes) => {
     onSelect?.(asset);
     onChange?.('');
     handleClose();
@@ -246,19 +245,7 @@ const SwitchAssetInput = ({
               </Box>
             </Box>
             <Box sx={{ overflow: 'auto', maxHeight: '200px' }}>
-              {loadingNewAsset ? (
-                <Box
-                  sx={{
-                    maxHeight: '178px',
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minHeight: '60px',
-                  }}
-                >
-                  <CircularProgress sx={{ mx: 'auto', my: 'auto' }} />
-                </Box>
-              ) : assets.length > 0 ? (
+              {assets.length > 0 ? (
                 assets.map((asset) => (
                   <MenuItem
                     key={asset.symbol}

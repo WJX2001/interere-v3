@@ -1,5 +1,4 @@
 // import LoadingButton from '@/components/primitives/LoadingButton';
-import LoadingButton from '@mui/lab/LoadingButton';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { COINLISTS } from '@/constants';
@@ -11,7 +10,6 @@ import {
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
-  Button,
   Divider,
   Grid2,
   IconButton,
@@ -21,8 +19,7 @@ import {
 } from '@mui/material';
 import { ethers } from 'ethers';
 import { debounce } from 'lodash';
-import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import {
@@ -32,6 +29,7 @@ import {
   useRouterContract,
 } from '@/hooks/useContract';
 import { uuid } from '@/utils';
+import SwapButton from '@/components/transactions/Button/SwapButton';
 interface Props {
   network: {
     wethAddress: Address;
@@ -47,7 +45,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     address: userAddress,
   });
 
-  const { enqueueSnackbar } = useSnackbar();
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
@@ -57,24 +54,16 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   const [debounceInputAmount, setDebounceInputAmount] = useState('');
-
-  // Stores the current reserves in the liquidity pool between selectedInputToken and selectedOutputToken
- 
-  const [loading, setLoading] = useState<boolean>(false);
-  // output loading
   const [outputLoading, setOutputLoading] = useState<boolean>(true);
   const [randomNumber, setRandomNumber] = useState<string>(uuid());
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
+  // obtain token reserve
   const { reserveArr } = useGetReserves(
     selectedInputToken.address,
     selectedOutputToken.address,
     network.factory,
   );
-
-  useEffect(() => {
-    console.log(reserveArr,'我卡开你')
-  },[reserveArr])
   const [reserves, setReserves] = useState<string[]>(reserveArr);
 
   const handleGetInputSymbolAndBalance = useCallback(async () => {
@@ -136,8 +125,19 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     handleGetOutputSymbolAndBalance();
   }, [randomNumber]);
 
+  useEffect(() => {
+    const coinTimeout = setTimeout(() => {
+      if (selectedInputToken.address) {
+        handleGetInputSymbolAndBalance();
+      }
+      if (selectedOutputToken.address) {
+        handleGetOutputSymbolAndBalance();
+      }
+    }, 20000);
+    return () => clearTimeout(coinTimeout);
+  });
 
-  const fetchData = async () => {
+  const handleGetAmount = useCallback(async () => {
     try {
       const decimal1 = await getDecimalsERC20(erc20TokenInputContract);
       const decimal2 = await getDecimalsERC20(erc20TokenOutputContract);
@@ -153,7 +153,14 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       setOutputAmount('0xNA');
       setOutputLoading(false);
     }
-  };
+  }, [
+    debounceInputAmount,
+    erc20TokenInputContract,
+    erc20TokenOutputContract,
+    selectedOutputToken,
+    selectedInputToken,
+    network,
+  ]);
 
   useEffect(() => {
     if (isNaN(parseFloat(debounceInputAmount))) {
@@ -163,114 +170,16 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       selectedInputToken?.address &&
       selectedOutputToken?.address
     ) {
-      fetchData();
+      handleGetAmount();
       setOutputLoading(true);
     }
   }, [
     debounceInputAmount,
     selectedInputToken?.address,
     selectedOutputToken?.address,
+    handleGetAmount,
   ]);
 
-  useEffect(() => {
-    console.log(
-      'Trying to get Reserves between:\n' +
-        selectedInputToken.address +
-        '\n' +
-        selectedOutputToken.address,
-    );
-
-    if (selectedInputToken.address && selectedOutputToken.address) {
-    }
-  }, []);
-
-  // useEffect(() => {
-  //   if (isNaN(parseFloat(debounceInputAmount))) {
-  //     setOutputAmount('');
-  //   } else if (
-  //     parseFloat(debounceInputAmount) &&
-  //     selectedInputToken.address &&
-  //     selectedOutputToken.address
-  //   ) {
-  //     getAmountOut(
-  //       selectedInputToken.address,
-  //       selectedOutputToken.address,
-  //       debounceInputAmount,
-  //       network.router as Contract,
-  //       network.signer as ethers.providers.JsonRpcSigner,
-  //     )
-  //       .then((amount) => {
-  //         console.log('我看看总额', amount);
-  //         setOutputAmount((amount as number).toFixed(7));
-  //       })
-  //       .catch(() => {
-  //         setOutputAmount('0xNA');
-  //       });
-  //   } else {
-  //     setOutputAmount('');
-  //   }
-  // }, [
-  //   debounceInputAmount,
-  //   selectedInputToken.address,
-  //   selectedOutputToken.address,
-  // ]);
-
-  // useEffect(() => {
-  //   const coinTimeout = setTimeout(() => {
-  //     console.log('Checking balances...');
-
-  //     if (
-  //       selectedInputToken.address &&
-  //       selectedOutputToken.address &&
-  //       network.account
-  //     ) {
-  //       getReserves(
-  //         selectedInputToken.address,
-  //         selectedOutputToken.address,
-  //         network.factory,
-  //         network.signer,
-  //         network.account,
-  //       ).then((data) => setReserves(data));
-  //     }
-
-  //     if (selectedInputToken.address && network.account) {
-  //       getBalanceAndSymbol(
-  //         network.account,
-  //         selectedInputToken.address,
-  //         network.provider,
-  //         network.signer as ethers.providers.JsonRpcSigner,
-  //         network.weth.address,
-  //         network.coins,
-  //       ).then((data) => {
-  //         setSelectedInputToken({
-  //           ...selectedInputToken,
-  //           balance: data.balance,
-  //         });
-  //       });
-  //     }
-  //     if (selectedOutputToken.address && network.account) {
-  //       getBalanceAndSymbol(
-  //         network.account,
-  //         selectedOutputToken.address,
-  //         network.provider,
-  //         network.signer as ethers.providers.JsonRpcSigner,
-  //         network.weth.address,
-  //         network.coins,
-  //       ).then((data) => {
-  //         setSelectedOutputToken({
-  //           ...selectedOutputToken,
-  //           balance: data.balance,
-  //         });
-  //       }).catch((e) => {
-  //         console.log(e, 'error')
-  //       }) ;
-  //     }
-  //   }, 10000);
-
-  //   return () => clearTimeout(coinTimeout);
-  // });
-
-  // Turns the coin's reserves into something nice and readable
   const formatReserve = (reserve: string, symbol: string) => {
     if (reserve && symbol) return reserve + ' ' + symbol;
     else return '0.0';
@@ -312,55 +221,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     setSelectedOutputToken(fromToken);
     setReserves(reserves.reverse());
   };
-
-  // Determines whether the button should be enabled or not
-  const isButtonEnabled = () => {
-    // If both coins have been selected, and a valid float has been entered which is less than the user's balance, then return true
-    const parsedInput1 = parseFloat(inputAmount);
-    const parsedInput2 = parseFloat(outputAmount);
-    if (outputAmount === '0xNA') {
-      return false;
-    }
-    return (
-      selectedInputToken.address &&
-      selectedOutputToken.address &&
-      !isNaN(parsedInput1) &&
-      !isNaN(parsedInput2) &&
-      0 < parsedInput1 &&
-      // @ts-ignore
-      parsedInput1 <= selectedInputToken.balance
-    );
-  };
-
-  // const handleSwap = () => {
-  //   console.log('Attempting to swap tokens...');
-  //   setLoading(true);
-  //   swapTokens(
-  //     selectedInputToken.address,
-  //     selectedOutputToken.address,
-  //     inputAmount,
-  //     network.router as Contract,
-  //     network.account as Address,
-  //     network.signer as ethers.providers.JsonRpcSigner,
-  //   )
-  //     .then(() => {
-  //       setLoading(false);
-  //       // If the transaction was successful, we clear to input to make sure the user doesn't accidental redo the transfer
-  //       setInputAmount('');
-  //       setOutputAmount('');
-  //       enqueueSnackbar('Transaction Successful', {
-  //         variant: 'success',
-  //         autoHideDuration: 10000,
-  //       });
-  //     })
-  //     .catch((e) => {
-  //       setLoading(false);
-  //       enqueueSnackbar('Transaction Failed (' + e.message + ')', {
-  //         variant: 'error',
-  //         autoHideDuration: 10000,
-  //       });
-  //     });
-  // };
 
   return (
     <>
@@ -480,36 +340,22 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               position: 'relative',
             }}
           >
-            {/* <Button variant="contained" sx={{ width: '100%' }}>
-              Switch
-            </Button> */}
-            {/* <LoadingButton
-              // loading={loading}
-              loading={true}
-              valid={isButtonEnabled()}
-              onClick={handleSwap}
-              // sx={{
-
-              // }}
-            >
-              Switch
-            </LoadingButton> */}
-            <LoadingButton
-              sx={{ width: '100%' }}
-              variant="contained"
-              loading={loading}
-              disabled={loading || !isButtonEnabled()}
-              // onClick={handleSwap}
-            >
-              Switch
-            </LoadingButton>
+            <SwapButton
+              token1Address={selectedInputToken.address}
+              token2Address={selectedOutputToken.address}
+              inputAmount={inputAmount}
+              erc20TokenInputContract={erc20TokenInputContract}
+              network={network}
+              userAddress={userAddress as Address}
+              setInputAmount={setInputAmount}
+              setDebounceInputAmount={setDebounceInputAmount}
+            />
           </Box>
 
           {/* <SwapPoolErros / */}
         </Paper>
       </Box>
     </>
-    // <>22222</>
   );
 };
 
