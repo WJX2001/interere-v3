@@ -1,6 +1,5 @@
 import { ContentContainer } from '@/components/ContentContainer';
 import { Box, Button, Paper, Typography, useTheme } from '@mui/material';
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotFountSVG from '@/assets/404.svg';
 const PageNotFount = () => {

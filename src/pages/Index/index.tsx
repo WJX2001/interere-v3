@@ -1,7 +1,11 @@
+import { NetworkTypes } from '@/types'
 import { Box } from '@mui/material'
-import React from 'react'
 
-const Index = () => {
+interface Props {
+  network: NetworkTypes
+}
+
+const Index:React.FC<Props> = () => {
   return (
     <>
       <Box

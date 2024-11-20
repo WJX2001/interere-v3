@@ -1,3 +1,4 @@
+import { useGetFactory, useRouterContract } from '@/hooks/useContract';
 import { Abi, Address } from 'viem';
 
 export interface MenuItemsTypes {
@@ -36,3 +37,10 @@ export type GetBalanceAndSymbolResult = {
   balance: string;
   symbol: string;
 } | false;
+
+export type NetworkTypes = {
+  wethAddress: Address;
+  coins: CoinListTypes[];
+  factory: ReturnType<typeof useGetFactory>;
+  router: ReturnType<typeof useRouterContract>;
+}

@@ -2,7 +2,7 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { COINLISTS } from '@/constants';
-import { CoinListTypes } from '@/types';
+import { CoinListTypes, NetworkTypes } from '@/types';
 import {
   getBalanceAndSymbolByWagmi,
   getDecimalsERC20,
@@ -24,19 +24,12 @@ import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import {
   useERC20,
-  useGetFactory,
   useGetReserves,
-  useRouterContract,
 } from '@/hooks/useContract';
 import { uuid } from '@/utils';
 import SwapButton from '@/components/transactions/Button/SwapButton';
 interface Props {
-  network: {
-    wethAddress: Address;
-    coins: CoinListTypes[];
-    factory: ReturnType<typeof useGetFactory>;
-    router: ReturnType<typeof useRouterContract>;
-  };
+  network: NetworkTypes;
 }
 const CoinSwap: React.FC<Props> = ({ network }) => {
   const currentChainId = useChainId();
