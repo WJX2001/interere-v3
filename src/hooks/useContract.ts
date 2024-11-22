@@ -67,7 +67,7 @@ export const useGetReserves = (
   const ERC20_1 = useERC20(address1);
   const ERC20_2 = useERC20(address2);
   const [reserves, setReserves] = useState<string[]>(['0', '0', '0']);
-  const [pairAddress, setPairAddress] = useState<Address>(zeroAddress)
+  const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
   const pair = usePair(pairAddress);
   const fetchPairAddress = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ export const useGetReserves = (
         address1,
         address2,
       ])) as Address;
-      setPairAddress(pairAddress)
+      setPairAddress(pairAddress);
       if (pairAddress !== '0x0000000000000000000000000000000000000000') {
         const reservesRaw = await fetchReserves(
           address1,
@@ -109,9 +109,12 @@ export const useGetReserves = (
     if (factory) {
       fetchPairAddress();
     }
-  }, [factory,fetchPairAddress]);
+  }, [factory, fetchPairAddress]);
 
-  return {
-    reserveArr: reserves,
-  };
+  return useMemo(() => {
+    return {
+      reserveArr: reserves,
+      pairContract: pair,
+    };
+  }, [reserves, pair]);;
 };

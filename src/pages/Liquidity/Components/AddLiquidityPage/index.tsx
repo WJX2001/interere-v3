@@ -4,9 +4,17 @@ import { useERC20, useGetReserves } from '@/hooks/useContract';
 import { CoinListTypes, NetworkTypes } from '@/types';
 import { uuid } from '@/utils';
 import { getBalanceAndSymbolByWagmi } from '@/utils/ethereumInfoFuntion';
-import { Box, colors, Divider, Grid2, Paper, Typography } from '@mui/material';
+import { quoteAddLiquidity } from '@/utils/LiquidityFunction';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  Grid2,
+  Paper,
+  Typography,
+} from '@mui/material';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 
@@ -27,7 +35,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   // obtain token reserve
-  const { reserveArr } = useGetReserves(
+  const { reserveArr, pairContract } = useGetReserves(
     selectedInputToken.address,
     selectedOutputToken.address,
     network.factory,
@@ -39,7 +47,9 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
   const [randomNumber, setRandomNumber] = useState<string>(uuid());
-
+  // Used when getting a quote of liquidity
+  const [liquidityOut, setLiquidityOut] = useState(['0', '0', '0']);
+  const [tokenInLoading, setTokenLoading] = useState<boolean>(false);
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,
@@ -114,6 +124,14 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     }
   };
 
+  const handleOutputChange = async (value: string) => {
+    if (value === '-1') {
+      setOutputAmount(selectedInputToken?.balance as string);
+    } else {
+      setOutputAmount(value);
+    }
+  };
+
   const handleSelectedOutputToken = (token: CoinListTypes) => {
     setSelectedOutputToken(token);
     setRandomNumber(uuid());
@@ -123,6 +141,63 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     if (reserve && symbol) return reserve + ' ' + symbol;
     else return '0.0';
   };
+
+  const isButtonEnabled = useMemo(() => {
+    const parsedInput1 = parseFloat(inputAmount);
+    const parsedInput2 = parseFloat(outputAmount);
+    if (selectedInputToken.balance && selectedOutputToken.balance) {
+      return (
+        selectedInputToken.address &&
+        selectedOutputToken.address &&
+        !isNaN(parsedInput1) &&
+        0 < parsedInput1 &&
+        !isNaN(parsedInput2) &&
+        0 < parsedInput2 &&
+        inputAmount <= selectedInputToken.balance &&
+        outputAmount <= selectedOutputToken.balance
+      );
+    } else {
+      return false;
+    }
+  }, [inputAmount, outputAmount, selectedInputToken, selectedOutputToken]);
+
+  const hanldeGetLiquidity = useCallback(async () => {
+    const data = await quoteAddLiquidity(
+      selectedInputToken.address,
+      selectedOutputToken.address,
+      inputAmount,
+      outputAmount,
+      network.factory,
+      pairContract,
+      erc20TokenInputContract,
+      erc20TokenOutputContract,
+      reserveArr,
+    );
+    console.log(data, '你终于来了');
+    console.log('TokenA in: ', data[0]);
+    console.log('TokenB in: ', data[1]);
+    console.log('Liquidity out: ', data[2]);
+    setLiquidityOut([data[0], data[1], data[2]]);
+    setTokenLoading(false);
+  }, [
+    selectedInputToken.address,
+    selectedOutputToken.address,
+    inputAmount,
+    outputAmount,
+    network.factory,
+    pairContract,
+    erc20TokenInputContract,
+    erc20TokenOutputContract,
+    reserveArr,
+  ]);
+
+  useEffect(() => {
+    if (isButtonEnabled && reserveArr) {
+      setTokenLoading(true);
+      console.log('wjx你好了', isButtonEnabled);
+      hanldeGetLiquidity();
+    }
+  }, [isButtonEnabled, hanldeGetLiquidity, reserveArr]);
 
   return (
     <>
@@ -150,11 +225,11 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
           value={outputAmount}
           chainId={currentChainId}
           selectedAsset={selectedOutputToken}
-          disableInput={true}
           assets={COINLISTS?.filter(
             (token) => token.address !== selectedInputToken.address,
           )}
           onSelect={handleSelectedOutputToken}
+          onChange={handleOutputChange}
         />
       </Box>
       <Box>
@@ -222,20 +297,43 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
               boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
             })}
           >
-            <Grid2
-              container
-              direction={'column'}
-              alignContent={'center'}
-              justifyContent={'center'}
-              spacing={2}
-              width={'100%'}
-              textAlign={'center'}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               <Typography variant="h4" style={{ color: 'white' }}>
                 Tokens in
               </Typography>
-              <Grid2 size={6}>222222</Grid2>
-            </Grid2>
+              <Grid2
+                container
+                direction={'row'}
+                justifyContent={'space-between'}
+                width={'100%'}
+              >
+                <Grid2 size={6} textAlign={'center'}>
+                  {tokenInLoading ? (
+                    <Box sx={{ flex: 1 }}>
+                      <CircularProgress color="inherit" size="16px" />
+                    </Box>
+                  ) : (
+                    formatReserve(liquidityOut[0], selectedInputToken.symbol)
+                  )}
+                </Grid2>
+                <Grid2 size={6} textAlign={'center'}>
+                  {tokenInLoading ? (
+                    <Box sx={{ flex: 1 }}>
+                      <CircularProgress color="inherit" size="16px" />
+                    </Box>
+                  ) : (
+                    formatReserve(liquidityOut[1], selectedOutputToken.symbol)
+                  )}
+                </Grid2>
+              </Grid2>
+            </Box>
           </Paper>
         </Box>
       </Box>
