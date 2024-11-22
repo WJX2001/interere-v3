@@ -88,6 +88,7 @@ export const useGetReserves = (
         const liquidityTokens_BN = (await pair?.read?.balanceOf([
           address,
         ])) as bigint;
+
         const liquidityTokens = formatEther(liquidityTokens_BN);
         const res = [
           Number(reservesRaw[0]).toPrecision(6),
@@ -100,21 +101,22 @@ export const useGetReserves = (
         setReserves(['0', '0', '0']);
       }
     } catch (err) {
-      console.log(err);
+      console.log(err, '王吉祥你错了2');
       setReserves(['0', '0', '0']);
     }
   }, [factory, address1, address2, ERC20_1, ERC20_2, pair, address]);
 
   useEffect(() => {
-    if (factory) {
+    console.log(address,'我哦看看')
+    if (factory && pair && ERC20_1 && ERC20_2 && address !== zeroAddress) {
       fetchPairAddress();
     }
-  }, [factory, fetchPairAddress]);
+  }, [factory, fetchPairAddress, pair, ERC20_1, ERC20_2, address]);
 
   return useMemo(() => {
     return {
       reserveArr: reserves,
       pairContract: pair,
     };
-  }, [reserves, pair]);;
+  }, [reserves, pair]);
 };

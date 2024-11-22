@@ -1,6 +1,6 @@
 import { useERC20, useGetFactory, usePair } from '@/hooks/useContract';
 import { Address, formatEther } from 'viem';
-import { fetchReserves, getDecimalsERC20 } from './ethereumInfoFuntion';
+import { getDecimalsERC20 } from './ethereumInfoFuntion';
 
 const quote = (amount1: number, reserve1: number, reserve2: number) => {
   const amount2 = amount1 * (reserve2 / reserve1);
@@ -68,7 +68,6 @@ export async function quoteAddLiquidity(
 ): Promise<[string, string, string]> {
   const reserveA = reservesRaw[0] as number;
   const reserveB = reservesRaw[1] as number;
-  debugger
   if (reserveA === 0 && reserveB === 0) {
     const amountOut = await quoteMintLiquidity(
       address1,

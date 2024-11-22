@@ -23,6 +23,7 @@ interface Props {
 }
 
 const AddLiquidityPage: React.FC<Props> = ({ network }) => {
+  console.log(network,'network')
   const { address: userAddress } = useAccount();
   const balanceData = useBalance({
     address: userAddress,
@@ -50,6 +51,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
   // Used when getting a quote of liquidity
   const [liquidityOut, setLiquidityOut] = useState(['0', '0', '0']);
   const [tokenInLoading, setTokenLoading] = useState<boolean>(false);
+
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,

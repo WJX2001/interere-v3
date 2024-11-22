@@ -58,7 +58,7 @@ export async function fetchReserves(
     const decimal1 = await getDecimalsERC20(ERC20Coin1);
     const decimal2 = await getDecimalsERC20(ERC20Coin2);
     // Get reserves
-    const reserveRaw = (await pair?.read?.getReserves()) as bigint[];
+    const reserveRaw = (await pair?.read?.getReserves([])) as bigint[];
     // Put the results in the right order
     const results = [
       (await pair?.read?.token0()) === address1 ? reserveRaw[0] : reserveRaw[1],
