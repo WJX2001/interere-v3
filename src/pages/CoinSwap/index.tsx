@@ -165,6 +165,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     ) {
       handleGetAmount();
       setOutputLoading(true);
+    }else {
+      setOutputAmount('');
     }
   }, [
     debounceInputAmount,
@@ -220,9 +222,9 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       <Box
         sx={(theme) => ({
           paddingTop: theme.spacing(12),
-          display: 'flex', // 启用弹性布局
-          justifyContent: 'center', // 水平居中
-          alignItems: 'center', // 垂直居中
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
         })}
       >
         <Paper

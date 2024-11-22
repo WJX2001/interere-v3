@@ -1,6 +1,5 @@
 import { MENUITEMS } from '@/constants';
-import { Button, List, ListItem, useMediaQuery, useTheme } from '@mui/material';
-import React from 'react';
+import { Button, List, ListItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 const NavItems = () => {

@@ -1,11 +1,55 @@
 import { FONT } from '@/constants';
-import { CheckCircleIcon, ChevronDownIcon, ExclamationCircleIcon, ExclamationIcon, InformationCircleIcon } from '@heroicons/react/solid';
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ExclamationCircleIcon,
+  ExclamationIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/solid';
 import { createTheme, SvgIcon, Theme, ThemeOptions } from '@mui/material';
 
 const theme = createTheme();
 const {
   typography: { pxToRem },
 } = theme;
+
+declare module '@mui/material/styles/createPalette' {
+  interface PaletteColor extends ColorPartial {}
+
+  interface TypeText {
+    muted: string;
+  }
+
+  interface TypeBackground {
+    default: string;
+    paper: string;
+    surface: string;
+    surface2: string;
+    header: string;
+    disabled: string;
+  }
+
+  interface Palette {
+    gradients: {
+      aaveGradient: string;
+      newGradient: string;
+    };
+    other: {
+      standardInputLine: string;
+    };
+    addLiquidity: {
+      addLiquidityButton: string;
+      removeLiquidityButton: string;
+    }
+  }
+
+  interface PaletteOptions {
+    gradients: {
+      aaveGradient: string;
+      newGradient: string;
+    };
+  }
+}
 
 interface TypographyCustomVariants {
   display1: React.CSSProperties;
@@ -185,6 +229,10 @@ export const getDesignTokens = (mode: 'light' | 'dark') => {
           'linear-gradient(248.86deg, #B6509E 10.51%, #2EBAC6 93.41%)',
         newGradient: 'linear-gradient(79.67deg, #8C3EBC 0%, #007782 95.82%)',
       },
+      addLiquidity: {
+        addLiquidityButton: getColor('#fff', '#3f51b5'),
+        removeLiquidityButton: getColor('#fff', '#f50057'),
+      }
     },
     spacing: 4,
     typography: {
@@ -352,7 +400,6 @@ export const getDesignTokens = (mode: 'light' | 'dark') => {
     },
   } as ThemeOptions;
 };
-
 
 export function getThemedComponents(theme: Theme) {
   return {
@@ -547,7 +594,8 @@ export function getThemedComponents(theme: Theme) {
             props: { variant: 'outlined' },
             style: {
               border: `1px solid ${theme.palette.divider}`,
-              boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.2), 0px 2px 10px rgba(0, 0, 0, 0.1)',
+              boxShadow:
+                '0px 0px 2px rgba(0, 0, 0, 0.2), 0px 2px 10px rgba(0, 0, 0, 0.1)',
               background:
                 theme.palette.mode === 'light'
                   ? theme.palette.background.paper
@@ -557,8 +605,11 @@ export function getThemedComponents(theme: Theme) {
           {
             props: { variant: 'elevation' },
             style: {
-              boxShadow: '0px 2px 1px rgba(0, 0, 0, 0.05), 0px 0px 1px rgba(0, 0, 0, 0.25)',
-              ...(theme.palette.mode === 'dark' ? { backgroundImage: 'none' } : {}),
+              boxShadow:
+                '0px 2px 1px rgba(0, 0, 0, 0.05), 0px 0px 1px rgba(0, 0, 0, 0.25)',
+              ...(theme.palette.mode === 'dark'
+                ? { backgroundImage: 'none' }
+                : {}),
             },
           },
         ],
