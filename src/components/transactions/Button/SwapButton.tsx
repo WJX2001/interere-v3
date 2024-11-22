@@ -8,7 +8,7 @@ import { getDecimalsERC20 } from '@/utils/ethereumInfoFuntion';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { BigNumber, ethers } from 'ethers';
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Address, Hash } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 

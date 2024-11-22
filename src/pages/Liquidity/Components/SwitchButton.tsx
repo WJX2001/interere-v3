@@ -1,7 +1,12 @@
 import { Button, ButtonGroup, colors } from '@mui/material';
 import React from 'react';
 
-const SwitchButton = () => {
+interface Props {
+  setAddliquidity: (param: boolean) => void;
+}
+
+const SwitchButton: React.FC<Props> = (props) => {
+  const { setAddliquidity } = props;
   const changeStyle = (addLiquidity: boolean) => {
     if (addLiquidity) {
       const add_button = document.getElementById('add-button');
@@ -46,6 +51,7 @@ const SwitchButton = () => {
             },
           })}
           onClick={() => {
+            setAddliquidity(true);
             changeStyle(true);
           }}
         >
@@ -61,6 +67,7 @@ const SwitchButton = () => {
             },
           })}
           onClick={() => {
+            setAddliquidity(false);
             changeStyle(false);
           }}
         >
