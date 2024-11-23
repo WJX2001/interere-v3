@@ -5,7 +5,7 @@ interface Props {
   network: NetworkTypes;
 }
 
-const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
+const RemoveLiquidityPage: React.FC<Props> = () => {
   return <div>index</div>;
 };
 
