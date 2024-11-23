@@ -436,6 +436,8 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
             userAddress={userAddress as Address}
             token1={erc20TokenInputContract}
             token2={erc20TokenOutputContract}
+            setInputAmount={setInputAmount}
+            setOutputAmount={setOutputAmount}
           />
         </Box>
       </Box>

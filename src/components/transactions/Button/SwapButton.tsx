@@ -99,6 +99,8 @@ const SwapButton: React.FC<Props> = (props) => {
           enqueueSnackbar('Transaction Successful', { variant: 'success' });
         } catch (err) {
           setButtonLoading(false);
+          setInputAmount('');
+          setDebounceInputAmount('');
           enqueueSnackbar(
             'Transaction Failed (' + (err as Error).message + ')',
             {

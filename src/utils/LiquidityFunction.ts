@@ -6,7 +6,7 @@ import {
 } from '@/hooks/useContract';
 import { Address, formatEther } from 'viem';
 import { getDecimalsERC20 } from './ethereumInfoFuntion';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
 const quote = (amount1: number, reserve1: number, reserve2: number) => {
   const amount2 = amount1 * (reserve2 / reserve1);
@@ -150,14 +150,16 @@ export async function getPairProveReceipt(
   return {
     tx1Hash,
     tx2Hash,
+    amountIn1,
+    amountIn2,
   };
 }
 
 export async function addLiquidity(
   address1: Address,
   address2: Address,
-  amountIn1: string,
-  amountIn2: string,
+  amountIn1: BigNumber,
+  amountIn2: BigNumber,
   amount1Min: string,
   amount2Min: string,
   wethAdress: Address,
@@ -167,7 +169,7 @@ export async function addLiquidity(
   const time = Math.floor(Date.now() / 1000) + 200000;
   const deadline = ethers.BigNumber.from(time);
   if (address1 === wethAdress) {
-    await routerContract?.write?.addLiquidityETH([
+    const addLiquidityResHx = await routerContract?.write?.addLiquidityETH([
       address2,
       amountIn2,
       amount2Min,
@@ -176,8 +178,9 @@ export async function addLiquidity(
       deadline,
       [amountIn1],
     ]);
+    return addLiquidityResHx;
   } else if (address2 === wethAdress) {
-    await routerContract?.write?.addLiquidityETH([
+    const addLiquidityResHx = await routerContract?.write?.addLiquidityETH([
       address1,
       amountIn1,
       amount1Min,
@@ -186,8 +189,9 @@ export async function addLiquidity(
       deadline,
       [amountIn2],
     ]);
+    return addLiquidityResHx;
   } else {
-    await routerContract?.write?.addLiquidity([
+    const addLiquidityResHx = await routerContract?.write?.addLiquidity([
       address1,
       address2,
       amountIn1,
@@ -197,5 +201,6 @@ export async function addLiquidity(
       account,
       deadline,
     ]);
+    return addLiquidityResHx;
   }
 }

@@ -8,6 +8,7 @@ import { Hash } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import { Address } from 'viem';
 import { useSnackbar } from 'notistack';
+import { BigNumber } from 'ethers';
 
 interface Props {
   token1Address: Address;
@@ -19,6 +20,8 @@ interface Props {
   userAddress: Address;
   token1: ReturnType<typeof useERC20>;
   token2: ReturnType<typeof useERC20>;
+  setInputAmount: (value: string) => void;
+  setOutputAmount: (value: string) => void;
 }
 
 const AddLiquidityButton: React.FC<Props> = (props) => {
@@ -32,73 +35,133 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
     token1Address,
     token2Address,
     userAddress,
+    setInputAmount,
+    setOutputAmount,
   } = props;
   const { enqueueSnackbar } = useSnackbar();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [approveReceiptHash1, setApproveReceiptHash1] = useState<Hash>();
   const [approveReceiptHash2, setApproveReceiptHash2] = useState<Hash>();
+  const [addLiquidityReceiptHash, setAddLiquidityReceiptHash] =
+    useState<Hash>();
+  const [amountIn1Bigint, setAmountIn1Bigint] = useState<BigNumber>();
+  const [amountIn2Bigint, setAmountIn2Bigint] = useState<BigNumber>();
 
-  const { isSuccess: isApproveToken1Success } = useWaitForTransactionReceipt({
-    hash: approveReceiptHash1,
-    confirmations:5,
-  });
+  const { isSuccess: isApproveToken1Success, isPending: tx1Pending } =
+    useWaitForTransactionReceipt({
+      hash: approveReceiptHash1,
+    });
 
-  const { isSuccess: isApproveToken2Success } = useWaitForTransactionReceipt({
-    hash: approveReceiptHash2,
-    confirmations:5,
-  });
+  const { isSuccess: isApproveToken2Success, isPending: tx2Pending } =
+    useWaitForTransactionReceipt({
+      hash: approveReceiptHash2,
+    });
+  const { isSuccess: isAddLiquiditySuccess, isPending: tx3Pending } =
+    useWaitForTransactionReceipt({
+      hash: addLiquidityReceiptHash,
+    });
+
+  useEffect(() => {
+    console.log(isAddLiquiditySuccess, '你咋了');
+    console.log(tx3Pending, '你咋了2');
+    if (isAddLiquiditySuccess && !tx3Pending) {
+      setButtonLoading(false);
+      setInputAmount('');
+      setOutputAmount('');
+      enqueueSnackbar('Transaction Successful', { variant: 'success' });
+    } else if (!isAddLiquiditySuccess) {
+      setButtonLoading(false);
+      setInputAmount('');
+      setOutputAmount('');
+      enqueueSnackbar('Transaction Failed', {
+        variant: 'error',
+        autoHideDuration: 10000,
+      });
+    }
+  }, [
+    isAddLiquiditySuccess,
+    tx3Pending,
+    setInputAmount,
+    setOutputAmount,
+    enqueueSnackbar,
+  ]);
 
   const handleAddLiquidity = useCallback(async () => {
     try {
-      await addLiquidity(
+      const addLiquidityHx = await addLiquidity(
         token1Address,
         token2Address,
-        inputAmount,
-        outputAmount,
+        amountIn1Bigint as BigNumber,
+        amountIn2Bigint as BigNumber,
         '0',
         '0',
         network?.wethAddress,
         network?.router,
         userAddress,
       );
-      setButtonLoading(false);
-      enqueueSnackbar('Transaction Successful', { variant: 'success' });
+      setAddLiquidityReceiptHash(addLiquidityHx);
+      // setButtonLoading(false);
+      // setInputAmount('');
+      // setOutputAmount('');
+      // enqueueSnackbar('Transaction Successful', { variant: 'success' });
     } catch (err) {
       setButtonLoading(false);
       enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
         variant: 'error',
         autoHideDuration: 10000,
       });
+      setInputAmount('');
+      setOutputAmount('');
     }
   }, [
-    inputAmount,
-    outputAmount,
     token1Address,
     token2Address,
     userAddress,
     network?.router,
     network?.wethAddress,
+    amountIn1Bigint,
+    amountIn2Bigint,
     enqueueSnackbar,
+    setInputAmount,
+    setOutputAmount,
   ]);
 
   useEffect(() => {
-    if (isApproveToken1Success && isApproveToken2Success) {
-      console.log("拿到回执")
+    if (
+      isApproveToken1Success &&
+      isApproveToken2Success &&
+      !tx1Pending &&
+      !tx2Pending &&
+      inputAmount &&
+      outputAmount
+    ) {
+      console.log('拿到回执');
       handleAddLiquidity();
     }
-  }, [isApproveToken1Success, isApproveToken2Success, handleAddLiquidity]);
+  }, [
+    isApproveToken1Success,
+    isApproveToken2Success,
+    handleAddLiquidity,
+    tx1Pending,
+    tx2Pending,
+    inputAmount,
+    outputAmount,
+  ]);
 
   const handleGetApproveHash = async () => {
-    setButtonLoading(true)
-    const { tx1Hash, tx2Hash } = await getPairProveReceipt(
-      inputAmount,
-      outputAmount,
-      network?.router,
-      token1,
-      token2,
-    );
+    setButtonLoading(true);
+    const { tx1Hash, tx2Hash, amountIn1, amountIn2 } =
+      await getPairProveReceipt(
+        inputAmount,
+        outputAmount,
+        network?.router,
+        token1,
+        token2,
+      );
     setApproveReceiptHash1(tx1Hash);
     setApproveReceiptHash2(tx2Hash);
+    setAmountIn1Bigint(amountIn1);
+    setAmountIn2Bigint(amountIn2);
   };
 
   return (
