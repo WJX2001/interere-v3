@@ -104,7 +104,7 @@ export const useGetReserves = (
         console.log('no reserves yet');
         setReserves(['0', '0', '0']);
       }
-    } catch (err) {
+    } catch {
       setIsError(true);
       setReserves(['0', '0', '0']);
     }

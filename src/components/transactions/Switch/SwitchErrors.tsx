@@ -1,7 +1,5 @@
 import { Warning } from '@/components/primitives/Warning';
 import { Typography } from '@mui/material';
-import React from 'react';
-
 interface SwitchErrorsProps {
   ratesError?: unknown;
   balance: string;

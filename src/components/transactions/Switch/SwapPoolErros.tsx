@@ -1,4 +1,3 @@
-import React from 'react';
 import { Warning } from '@/components/primitives/Warning';
 import { Typography } from '@mui/material';
 interface SwapPoolErrosProps {

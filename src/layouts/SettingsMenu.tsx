@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { CogIcon } from '@heroicons/react/solid';
 import { Button, SvgIcon } from '@mui/material';
 const SettingsMenu = () => {

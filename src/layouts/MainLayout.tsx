@@ -1,5 +1,5 @@
-import { Box, Container } from '@mui/material';
-import React, { ReactNode } from 'react';
+import { Box} from '@mui/material';
+import  { ReactNode } from 'react';
 import AppHeader from './AppHeader';
 import AppFooter from './AppFooter';
 

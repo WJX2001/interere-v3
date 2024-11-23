@@ -1,7 +1,6 @@
-import { Box, Button, Link, SvgIcon, Typography } from '@mui/material';
+import { Box, Link, SvgIcon, Typography } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import XIcon from '@mui/icons-material/X';
-import React from 'react';
 const FOOTER_LINKS = [
   {
     href: 'https://aave.com/terms-of-service',
