@@ -105,7 +105,6 @@ export const useGetReserves = (
         setReserves(['0', '0', '0']);
       }
     } catch (err) {
-      console.log(err, '王吉祥你错了2');
       setIsError(true);
       setReserves(['0', '0', '0']);
     }
@@ -131,3 +130,10 @@ export const useGetReserves = (
     };
   }, [reserves, pair, isError]);
 };
+
+
+// export const useERC20PairDecimals = () => {
+
+// }
+
+

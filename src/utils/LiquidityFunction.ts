@@ -1,6 +1,12 @@
-import { useERC20, useGetFactory, usePair } from '@/hooks/useContract';
+import {
+  useERC20,
+  useGetFactory,
+  usePair,
+  useRouterContract,
+} from '@/hooks/useContract';
 import { Address, formatEther } from 'viem';
 import { getDecimalsERC20 } from './ethereumInfoFuntion';
+import { ethers } from 'ethers';
 
 const quote = (amount1: number, reserve1: number, reserve2: number) => {
   const amount2 = amount1 * (reserve2 / reserve1);
@@ -16,7 +22,7 @@ export async function quoteMintLiquidity(
   pair: ReturnType<typeof usePair>,
   ERC20Coin1: ReturnType<typeof useERC20>,
   ERC20Coin2: ReturnType<typeof useERC20>,
-  reservesRaw: unknown[]
+  reservesRaw: unknown[],
 ) {
   const MINIMUM_LIQUIDITY = 1000;
   let _reserveA;
@@ -64,7 +70,7 @@ export async function quoteAddLiquidity(
   pair: ReturnType<typeof usePair>,
   ERC20Coin1: ReturnType<typeof useERC20>,
   ERC20Coin2: ReturnType<typeof useERC20>,
-  reservesRaw: unknown[]
+  reservesRaw: unknown[],
 ): Promise<[string, string, string]> {
   const reserveA = reservesRaw[0] as number;
   const reserveB = reservesRaw[1] as number;
@@ -78,7 +84,7 @@ export async function quoteAddLiquidity(
       pair,
       ERC20Coin1,
       ERC20Coin2,
-      reservesRaw
+      reservesRaw,
     );
     return [amountADesired, amountBDesired, Number(amountOut).toPrecision(8)];
   } else {
@@ -95,7 +101,7 @@ export async function quoteAddLiquidity(
         pair,
         ERC20Coin1,
         ERC20Coin2,
-        reservesRaw
+        reservesRaw,
       );
       return [amountADesired, amountBOptimal, amountOut.toPrecision(8)];
     } else {
@@ -111,9 +117,85 @@ export async function quoteAddLiquidity(
         pair,
         ERC20Coin1,
         ERC20Coin2,
-        reservesRaw
+        reservesRaw,
       );
       return [amountAOptimal, amountBDesired, amountOut.toPrecision(8)];
     }
+  }
+}
+
+export async function getPairProveReceipt(
+  amount1: string,
+  amount2: string,
+  routerContract: ReturnType<typeof useRouterContract>,
+  token1: ReturnType<typeof useERC20>,
+  token2: ReturnType<typeof useERC20>,
+) {
+  const token1Decimals = await getDecimalsERC20(token1);
+  const token2Decimals = await getDecimalsERC20(token2);
+
+  const amountIn1 = ethers.utils.parseUnits(amount1, token1Decimals);
+  const amountIn2 = ethers.utils.parseUnits(amount2, token2Decimals);
+
+  const tx1Hash = await token1?.write?.approve([
+    routerContract?.address,
+    amountIn1,
+  ]);
+
+  const tx2Hash = await token2?.write?.approve([
+    routerContract?.address,
+    amountIn2,
+  ]);
+
+  return {
+    tx1Hash,
+    tx2Hash,
+  };
+}
+
+export async function addLiquidity(
+  address1: Address,
+  address2: Address,
+  amountIn1: string,
+  amountIn2: string,
+  amount1Min: string,
+  amount2Min: string,
+  wethAdress: Address,
+  routerContract: ReturnType<typeof useRouterContract>,
+  account: Address,
+) {
+  const time = Math.floor(Date.now() / 1000) + 200000;
+  const deadline = ethers.BigNumber.from(time);
+  if (address1 === wethAdress) {
+    await routerContract?.write?.addLiquidityETH([
+      address2,
+      amountIn2,
+      amount2Min,
+      amount1Min,
+      account,
+      deadline,
+      [amountIn1],
+    ]);
+  } else if (address2 === wethAdress) {
+    await routerContract?.write?.addLiquidityETH([
+      address1,
+      amountIn1,
+      amount1Min,
+      amount2Min,
+      account,
+      deadline,
+      [amountIn2],
+    ]);
+  } else {
+    await routerContract?.write?.addLiquidity([
+      address1,
+      address2,
+      amountIn1,
+      amountIn2,
+      amount1Min,
+      amount2Min,
+      account,
+      deadline,
+    ]);
   }
 }

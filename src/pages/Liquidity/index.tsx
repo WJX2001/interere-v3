@@ -31,14 +31,14 @@ const Liquidity: React.FC<Props> = ({ network }) => {
         })}
       >
         <Card
-          sx={(theme) => ({
+          sx={{
             width: '33.3%',
             minWidth: '250px',
             // padding: theme.spacing(2),
             maxHeight: 'calc(100vh - 20px)',
             overflowY: 'auto',
             // mb: theme.spacing(12),
-          })}
+          }}
         >
           <CardHeader
             title={

@@ -5,8 +5,6 @@ import { CoinListTypes, NetworkTypes } from '@/types';
 import { uuid } from '@/utils';
 import { getBalanceAndSymbolByWagmi } from '@/utils/ethereumInfoFuntion';
 import { quoteAddLiquidity } from '@/utils/LiquidityFunction';
-import LoadingButton from '@mui/lab/LoadingButton';
-import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
   CircularProgress,
@@ -19,6 +17,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
+import AddLiquidityButton from '../AddLiquidityButton';
 
 interface Props {
   network: NetworkTypes;
@@ -150,7 +149,10 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
   const isButtonEnabled = useMemo(() => {
     const parsedInput1 = parseFloat(inputAmount);
     const parsedInput2 = parseFloat(outputAmount);
-    if (selectedInputToken.balance && selectedOutputToken.balance) {
+    if (
+      Number(selectedInputToken.balance) > 0 &&
+      Number(selectedOutputToken.balance) > 0
+    ) {
       return (
         selectedInputToken.address &&
         selectedOutputToken.address &&
@@ -158,8 +160,8 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
         0 < parsedInput1 &&
         !isNaN(parsedInput2) &&
         0 < parsedInput2 &&
-        inputAmount <= selectedInputToken.balance &&
-        outputAmount <= selectedOutputToken.balance
+        inputAmount <= String(selectedInputToken.balance) &&
+        outputAmount <= String(selectedOutputToken.balance)
       );
     } else {
       return false;
@@ -397,22 +399,22 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                 justifyContent={'center'}
                 width={'100%'}
               >
-                {tokenInLoading ? (
-                  <Box sx={{ flex: 1 }}>
-                    <CircularProgress color="inherit" size="16px" />
-                  </Box>
-                ) : (
-                  <Typography
-                    sx={(theme) => ({
-                      color: 'white',
-                      padding: theme.spacing(1),
-                      overflow: 'wrap',
-                      textAlign: 'center',
-                    })}
-                  >
-                    {formatReserve(liquidityOut[2], 'UNI-V2')}
-                  </Typography>
-                )}
+                <Typography
+                  sx={(theme) => ({
+                    color: 'white',
+                    padding: theme.spacing(1),
+                    overflow: 'wrap',
+                    textAlign: 'center',
+                  })}
+                >
+                  {tokenInLoading ? (
+                    <Box sx={{ flex: 1 }}>
+                      <CircularProgress color="inherit" size="16px" />
+                    </Box>
+                  ) : (
+                    formatReserve(liquidityOut[2], 'UNI-V2')
+                  )}
+                </Typography>
               </Grid2>
             </Box>
           </Paper>
@@ -420,21 +422,21 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
         <Box
           sx={{
             width: '100%',
-            display:'flex',
-            justifyContent:'center'
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
-          <LoadingButton
-            variant="contained"
-            sx={{
-              mt: 5,
-              width: '100%',
-            }}
-            disabled
-            startIcon={<AddIcon />}
-          >
-            Add Liquidity
-          </LoadingButton>
+          <AddLiquidityButton
+            token1Address={selectedInputToken.address}
+            token2Address={selectedOutputToken.address}
+            isButtonEnabled={isButtonEnabled}
+            inputAmount={inputAmount}
+            outputAmount={outputAmount}
+            network={network}
+            userAddress={userAddress as Address}
+            token1={erc20TokenInputContract}
+            token2={erc20TokenOutputContract}
+          />
         </Box>
       </Box>
     </>
