@@ -69,7 +69,7 @@ export const useGetReserves = (
   const [reserves, setReserves] = useState<string[]>(['0', '0', '0']);
   const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
   const pair = usePair(pairAddress);
-
+  const [isError, setIsError] = useState<boolean>(false);
   const getPariAddress = useCallback(async () => {
     const pairAddress = (await factory?.read?.getPair([
       address1,
@@ -106,6 +106,7 @@ export const useGetReserves = (
       }
     } catch (err) {
       console.log(err, '王吉祥你错了2');
+      setIsError(true);
       setReserves(['0', '0', '0']);
     }
   }, [address1, address2, ERC20_1, ERC20_2, pair, address, pairAddress]);
@@ -117,12 +118,7 @@ export const useGetReserves = (
   }, [pairAddress, fetchPairAddress]);
 
   useEffect(() => {
-    if (
-      factory?.address !== zeroAddress &&
-      pair &&
-      ERC20_1 &&
-      ERC20_2
-    ) {
+    if (factory?.address !== zeroAddress && pair && ERC20_1 && ERC20_2) {
       getPariAddress();
     }
   }, [factory, fetchPairAddress, pair, ERC20_1, ERC20_2, getPariAddress]);
@@ -131,6 +127,7 @@ export const useGetReserves = (
     return {
       reserveArr: reserves,
       pairContract: pair,
+      hasError: isError,
     };
-  }, [reserves, pair]);
+  }, [reserves, pair, isError]);
 };

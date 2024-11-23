@@ -5,6 +5,8 @@ import { CoinListTypes, NetworkTypes } from '@/types';
 import { uuid } from '@/utils';
 import { getBalanceAndSymbolByWagmi } from '@/utils/ethereumInfoFuntion';
 import { quoteAddLiquidity } from '@/utils/LiquidityFunction';
+import LoadingButton from '@mui/lab/LoadingButton';
+import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
   CircularProgress,
@@ -35,12 +37,11 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   // obtain token reserve
-  const { reserveArr, pairContract } = useGetReserves(
+  const { reserveArr, pairContract, hasError } = useGetReserves(
     selectedInputToken.address,
     selectedOutputToken.address,
     network.factory,
   );
-  const [reserves, setReserves] = useState<string[]>(reserveArr);
   // Stores the user's balance of liquidity tokens for the current pair
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
@@ -200,7 +201,8 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
       isButtonEnabled &&
       reserveArr &&
       network.factory?.address !== zeroAddress &&
-      pairContract?.address !== zeroAddress
+      pairContract?.address !== zeroAddress &&
+      !hasError
     ) {
       setTokenLoading(true);
       console.log('wjx你好了', isButtonEnabled);
@@ -212,6 +214,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     reserveArr,
     network.factory?.address,
     pairContract?.address,
+    hasError,
   ]);
 
   return (
@@ -305,7 +308,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
               borderRadius: theme.spacing(2),
               padding: theme.spacing(2),
               paddingBottom: theme.spacing(3),
-              width: '90%',
+              width: '100%',
               overflow: 'wrap',
               background: 'linear-gradient(135deg, #1B2030, #2A2F4F, #4A4E69)',
               color: 'primary.main',
@@ -320,7 +323,13 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                 justifyContent: 'center',
               }}
             >
-              <Typography variant="h4" style={{ color: 'white' }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  color: 'white',
+                  mb: 3,
+                }}
+              >
                 Tokens in
               </Typography>
               <Grid2
@@ -335,7 +344,19 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                       <CircularProgress color="inherit" size="16px" />
                     </Box>
                   ) : (
-                    formatReserve(liquidityOut[0], selectedInputToken.symbol)
+                    <Typography
+                      sx={(theme) => ({
+                        color: 'white',
+                        padding: theme.spacing(1),
+                        overflow: 'wrap',
+                        textAlign: 'center',
+                      })}
+                    >
+                      {formatReserve(
+                        liquidityOut[0],
+                        selectedInputToken.symbol,
+                      )}
+                    </Typography>
                   )}
                 </Grid2>
                 <Grid2 size={6} textAlign={'center'}>
@@ -344,12 +365,76 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                       <CircularProgress color="inherit" size="16px" />
                     </Box>
                   ) : (
-                    formatReserve(liquidityOut[1], selectedOutputToken.symbol)
+                    <Typography
+                      sx={(theme) => ({
+                        color: 'white',
+                        padding: theme.spacing(1),
+                        overflow: 'wrap',
+                        textAlign: 'center',
+                      })}
+                    >
+                      {formatReserve(
+                        liquidityOut[1],
+                        selectedOutputToken.symbol,
+                      )}
+                    </Typography>
                   )}
                 </Grid2>
               </Grid2>
+              <Divider sx={{ mt: 5, mb: 5, width: '100%' }} />
+              <Typography
+                variant="h3"
+                sx={{
+                  color: 'white',
+                  mb: 3,
+                }}
+              >
+                Liquidity Pool Tokens Out
+              </Typography>
+              <Grid2
+                container
+                direction={'row'}
+                justifyContent={'center'}
+                width={'100%'}
+              >
+                {tokenInLoading ? (
+                  <Box sx={{ flex: 1 }}>
+                    <CircularProgress color="inherit" size="16px" />
+                  </Box>
+                ) : (
+                  <Typography
+                    sx={(theme) => ({
+                      color: 'white',
+                      padding: theme.spacing(1),
+                      overflow: 'wrap',
+                      textAlign: 'center',
+                    })}
+                  >
+                    {formatReserve(liquidityOut[2], 'UNI-V2')}
+                  </Typography>
+                )}
+              </Grid2>
             </Box>
           </Paper>
+        </Box>
+        <Box
+          sx={{
+            width: '100%',
+            display:'flex',
+            justifyContent:'center'
+          }}
+        >
+          <LoadingButton
+            variant="contained"
+            sx={{
+              mt: 5,
+              width: '100%',
+            }}
+            disabled
+            startIcon={<AddIcon />}
+          >
+            Add Liquidity
+          </LoadingButton>
         </Box>
       </Box>
     </>

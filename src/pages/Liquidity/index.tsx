@@ -27,15 +27,17 @@ const Liquidity: React.FC<Props> = ({ network }) => {
           display: 'flex', // 启用弹性布局
           justifyContent: 'center', // 水平居中
           alignItems: 'center', // 垂直居中
+          paddingBottom: theme.spacing(12),
         })}
       >
         <Card
           sx={(theme) => ({
             width: '33.3%',
             minWidth: '250px',
-            padding: theme.spacing(2),
+            // padding: theme.spacing(2),
             maxHeight: 'calc(100vh - 20px)',
             overflowY: 'auto',
+            // mb: theme.spacing(12),
           })}
         >
           <CardHeader
