@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Address } from 'viem';
+import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 
 interface Props {
@@ -23,7 +23,6 @@ interface Props {
 }
 
 const AddLiquidityPage: React.FC<Props> = ({ network }) => {
-  console.log(network,'network')
   const { address: userAddress } = useAccount();
   const balanceData = useBalance({
     address: userAddress,
@@ -137,6 +136,9 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
   const handleSelectedOutputToken = (token: CoinListTypes) => {
     setSelectedOutputToken(token);
     setRandomNumber(uuid());
+    setLiquidityOut((prevState) =>
+      prevState.map((value, index) => (index === 1 ? '0' : value)),
+    );
   };
 
   const formatReserve = (reserve: string, symbol: string) => {
@@ -194,12 +196,23 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
   ]);
 
   useEffect(() => {
-    if (isButtonEnabled && reserveArr) {
+    if (
+      isButtonEnabled &&
+      reserveArr &&
+      network.factory?.address !== zeroAddress &&
+      pairContract?.address !== zeroAddress
+    ) {
       setTokenLoading(true);
       console.log('wjx你好了', isButtonEnabled);
       hanldeGetLiquidity();
     }
-  }, [isButtonEnabled, hanldeGetLiquidity, reserveArr]);
+  }, [
+    isButtonEnabled,
+    hanldeGetLiquidity,
+    reserveArr,
+    network.factory?.address,
+    pairContract?.address,
+  ]);
 
   return (
     <>

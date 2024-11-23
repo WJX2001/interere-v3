@@ -69,13 +69,17 @@ export const useGetReserves = (
   const [reserves, setReserves] = useState<string[]>(['0', '0', '0']);
   const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
   const pair = usePair(pairAddress);
+
+  const getPariAddress = useCallback(async () => {
+    const pairAddress = (await factory?.read?.getPair([
+      address1,
+      address2,
+    ])) as Address;
+    setPairAddress(pairAddress);
+  }, [factory, address1, address2]);
+
   const fetchPairAddress = useCallback(async () => {
     try {
-      const pairAddress = (await factory?.read?.getPair([
-        address1,
-        address2,
-      ])) as Address;
-      setPairAddress(pairAddress);
       if (pairAddress !== '0x0000000000000000000000000000000000000000') {
         const reservesRaw = await fetchReserves(
           address1,
@@ -104,14 +108,24 @@ export const useGetReserves = (
       console.log(err, '王吉祥你错了2');
       setReserves(['0', '0', '0']);
     }
-  }, [factory, address1, address2, ERC20_1, ERC20_2, pair, address]);
+  }, [address1, address2, ERC20_1, ERC20_2, pair, address, pairAddress]);
 
   useEffect(() => {
-    console.log(address,'我哦看看')
-    if (factory && pair && ERC20_1 && ERC20_2 && address !== zeroAddress) {
+    if (pairAddress !== zeroAddress) {
       fetchPairAddress();
     }
-  }, [factory, fetchPairAddress, pair, ERC20_1, ERC20_2, address]);
+  }, [pairAddress, fetchPairAddress]);
+
+  useEffect(() => {
+    if (
+      factory?.address !== zeroAddress &&
+      pair &&
+      ERC20_1 &&
+      ERC20_2
+    ) {
+      getPariAddress();
+    }
+  }, [factory, fetchPairAddress, pair, ERC20_1, ERC20_2, getPariAddress]);
 
   return useMemo(() => {
     return {
