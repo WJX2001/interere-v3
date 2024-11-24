@@ -168,7 +168,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     }
   }, [inputAmount, outputAmount, selectedInputToken, selectedOutputToken]);
 
-  const hanldeGetLiquidity = useCallback(async () => {
+  const handleGetLiquidity = useCallback(async () => {
     const data = await quoteAddLiquidity(
       selectedInputToken.address,
       selectedOutputToken.address,
@@ -180,10 +180,6 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
       erc20TokenOutputContract,
       reserveArr,
     );
-    console.log(data, '你终于来了');
-    console.log('TokenA in: ', data[0]);
-    console.log('TokenB in: ', data[1]);
-    console.log('Liquidity out: ', data[2]);
     setLiquidityOut([data[0], data[1], data[2]]);
     setTokenLoading(false);
   }, [
@@ -208,11 +204,11 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     ) {
       setTokenLoading(true);
       console.log('wjx你好了', isButtonEnabled);
-      hanldeGetLiquidity();
+      handleGetLiquidity();
     }
   }, [
     isButtonEnabled,
-    hanldeGetLiquidity,
+    handleGetLiquidity,
     reserveArr,
     network.factory?.address,
     pairContract?.address,
@@ -412,7 +408,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                       <CircularProgress color="inherit" size="16px" />
                     </Box>
                   ) : (
-                    formatReserve(liquidityOut[2], 'UNI-V2')
+                    formatReserve(liquidityOut[2] ?? ['0','0','0'], 'UNI-V2')
                   )}
                 </Typography>
               </Grid2>

@@ -4,7 +4,7 @@ import {
   usePair,
   useRouterContract,
 } from '@/hooks/useContract';
-import { Address, formatEther } from 'viem';
+import { Address, formatEther, zeroAddress } from 'viem';
 import { getDecimalsERC20 } from './ethereumInfoFuntion';
 import { BigNumber, ethers } from 'ethers';
 
@@ -203,4 +203,30 @@ export async function addLiquidity(
     ]);
     return addLiquidityResHx;
   }
+}
+
+export async function quoteRemoveLiquidity(
+  liquidity: number,
+  reserveA: number,
+  reserveB: number,
+  factory: ReturnType<typeof useGetFactory>,
+  pair: ReturnType<typeof usePair>,
+) {
+  const feeOn = (await factory?.read?.feeTo()) !== zeroAddress;
+  const _KLast = (await pair?.read?.kLast()) as bigint;
+  const KLast = Number(formatEther(_KLast));
+  const _totalSupply = (await pair?.read?.totalSupply()) as bigint;
+  let totalSupply = Number(formatEther(_totalSupply));
+
+  if (feeOn && KLast > 0) {
+    const feeLiquidity =
+      (totalSupply * (Math.sqrt(reserveA * reserveB) - Math.sqrt(KLast))) /
+      (5 * Math.sqrt(reserveA * reserveB) + Math.sqrt(KLast));
+    totalSupply = totalSupply + feeLiquidity;
+  }
+
+  const Aout = (reserveA * liquidity) / totalSupply;
+  const Bout = (reserveB * liquidity) / totalSupply;
+
+  return [liquidity, Aout, Bout];
 }

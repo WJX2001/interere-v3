@@ -132,8 +132,6 @@ const SwapButton: React.FC<Props> = (props) => {
     // If both coins have been selected, and a valid float has been entered which is less than the user's balance, then return true
     const parsedInput1 = parseFloat(inputAmount);
     const parsedInput2 = parseFloat(outputAmount);
-    console.log(parsedInput2,'test3')
-    console.log(isNaN(parsedInput2),'test2')
     return (
       token1Address &&
       token2Address &&

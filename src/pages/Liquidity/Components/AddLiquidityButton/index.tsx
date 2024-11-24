@@ -62,21 +62,11 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
     });
 
   useEffect(() => {
-    console.log(isAddLiquiditySuccess, '你咋了');
-    console.log(tx3Pending, '你咋了2');
     if (isAddLiquiditySuccess && !tx3Pending) {
       setButtonLoading(false);
       setInputAmount('');
       setOutputAmount('');
       enqueueSnackbar('Transaction Successful', { variant: 'success' });
-    } else if (!isAddLiquiditySuccess) {
-      setButtonLoading(false);
-      setInputAmount('');
-      setOutputAmount('');
-      enqueueSnackbar('Transaction Failed', {
-        variant: 'error',
-        autoHideDuration: 10000,
-      });
     }
   }, [
     isAddLiquiditySuccess,
