@@ -4,12 +4,12 @@ import {
   useRouterContract,
 } from '@/hooks/useContract';
 import { CoinListTypes } from '@/types';
-import { getDecimalsERC20 } from '@/utils/ethereumInfoFuntion';
+import { getDecimalsERC20, swapTokens } from '@/utils/ethereumInfoFuntion';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { BigNumber, ethers } from 'ethers';
 import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Address, Hash } from 'viem';
+import { Address, Hash, zeroHash } from 'viem';
 import { useWaitForTransactionReceipt } from 'wagmi';
 
 interface Props {
@@ -43,76 +43,92 @@ const SwapButton: React.FC<Props> = (props) => {
     setInputAmount,
     setDebounceInputAmount,
   } = props;
-  const [approveHash, setApproveHas] = useState<Hash>();
+  const [approveHash, setApproveHash] = useState<Hash>();
   const [amountInAll, setAmountInAll] = useState<BigNumber>();
   const [buttonLoading, setButtonLoading] = useState(false);
-  const { isSuccess } = useWaitForTransactionReceipt({
-    hash: approveHash,
-  });
+  const [realSwapHash, setRealSwapHash] = useState<Hash>();
+
+  const { isSuccess, isPending: approvePending } = useWaitForTransactionReceipt(
+    {
+      hash: approveHash,
+    },
+  );
+
+  const { isSuccess: isSuccessSwap, isPending: swapPending } =
+    useWaitForTransactionReceipt({
+      hash: realSwapHash,
+    });
   const { enqueueSnackbar } = useSnackbar();
 
-  const hanldeRealSwap = useCallback(async () => {
-    const tokens = [token1Address, token2Address];
-    const wethAddress = network.wethAddress;
-    const time = Math.floor(Date.now() / 1000) + 200000;
-    const deadline = ethers.BigNumber.from(time);
-    const amountOut = (await network.router?.read?.getAmountsOut([
-      amountInAll,
-      tokens,
-    ])) as BigNumber[];
-    if (token1Address === wethAddress) {
-      await network.router?.write?.swapExactETHForTokens([
-        amountOut[1],
-        tokens,
-        userAddress,
-        deadline,
-        [amountInAll],
-      ]);
-    } else if (token2Address === wethAddress) {
-      await network.router?.write?.swapExactTokensForETH([
-        amountInAll,
-        amountOut[1],
-        tokens,
-        userAddress,
-        deadline,
-      ]);
-    } else {
-      await network.router?.write?.swapExactTokensForTokens([
-        amountInAll,
-        amountOut[1],
-        tokens,
-        userAddress,
-        deadline,
-      ]);
+  useEffect(() => {
+    console.log(isSuccessSwap,'isSuccessSwap')
+    console.log(swapPending,'swapPending')
+    if (isSuccessSwap && !swapPending) {
+      console.log("来了啊")
+      setButtonLoading(false);
+      setInputAmount('');
+      setDebounceInputAmount('');
+      setRealSwapHash(undefined)
+      setApproveHash(undefined)
+      enqueueSnackbar('Transaction Successful', { variant: 'success' });
     }
-  }, [amountInAll, network, token1Address, token2Address, userAddress]);
+  }, [
+    isSuccessSwap,
+    swapPending,
+    setDebounceInputAmount,
+    setInputAmount,
+    enqueueSnackbar,
+    inputAmount,
+  ]);
+
+  const realSwapHanlde = useCallback(async () => {
+    try {
+      const realHx = await swapTokens(
+        token1Address,
+        token2Address,
+        network?.wethAddress,
+        amountInAll as BigNumber,
+        network?.router,
+        userAddress,
+      );
+      setRealSwapHash(realHx);
+    } catch (err) {
+      setButtonLoading(false);
+      setInputAmount('');
+      setDebounceInputAmount('');
+      setRealSwapHash(undefined)
+      setApproveHash(undefined)
+      enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
+        variant: 'error',
+        autoHideDuration: 10000,
+      });
+    }
+  }, [
+    amountInAll,
+    token1Address,
+    token2Address,
+    network?.router,
+    network?.wethAddress,
+    userAddress,
+    setDebounceInputAmount,
+    setInputAmount,
+    enqueueSnackbar,
+  ]);
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !approvePending && inputAmount) {
       console.log('isSuccess');
-      const tmp = async () => {
-        try {
-          await hanldeRealSwap();
-          setButtonLoading(false);
-          setInputAmount('');
-          setDebounceInputAmount('');
-          enqueueSnackbar('Transaction Successful', { variant: 'success' });
-        } catch (err) {
-          setButtonLoading(false);
-          setInputAmount('');
-          setDebounceInputAmount('');
-          enqueueSnackbar(
-            'Transaction Failed (' + (err as Error).message + ')',
-            {
-              variant: 'error',
-              autoHideDuration: 10000,
-            },
-          );
-        }
-      };
-      tmp();
+      realSwapHanlde();
     }
-  }, [isSuccess, hanldeRealSwap]);
+  }, [
+    isSuccess,
+    setDebounceInputAmount,
+    setInputAmount,
+    enqueueSnackbar,
+    inputAmount,
+    realSwapHanlde,
+    approvePending,
+  ]);
 
   const handleSwap = async () => {
     setButtonLoading(true);
@@ -123,10 +139,9 @@ const SwapButton: React.FC<Props> = (props) => {
       network.router?.address,
       amountIn,
     ]);
-    setApproveHas(approveTx);
+    setApproveHash(approveTx);
     console.log('approveTx');
   };
-
 
   const isButtonEnabled = () => {
     // If both coins have been selected, and a valid float has been entered which is less than the user's balance, then return true

@@ -66,6 +66,9 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
       setButtonLoading(false);
       setInputAmount('');
       setOutputAmount('');
+      setApproveReceiptHash1(undefined);
+      setApproveReceiptHash2(undefined);
+      setAddLiquidityReceiptHash(undefined);
       enqueueSnackbar('Transaction Successful', { variant: 'success' });
     }
   }, [
@@ -90,10 +93,6 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
         userAddress,
       );
       setAddLiquidityReceiptHash(addLiquidityHx);
-      // setButtonLoading(false);
-      // setInputAmount('');
-      // setOutputAmount('');
-      // enqueueSnackbar('Transaction Successful', { variant: 'success' });
     } catch (err) {
       setButtonLoading(false);
       enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
@@ -102,6 +101,9 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
       });
       setInputAmount('');
       setOutputAmount('');
+      setApproveReceiptHash1(undefined);
+      setApproveReceiptHash2(undefined);
+      setAddLiquidityReceiptHash(undefined);
     }
   }, [
     token1Address,

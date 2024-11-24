@@ -181,6 +181,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   };
 
   const handleSelectedInputToken = (token: CoinListTypes) => {
+    console.log(token,'你在这啊啊')
     setSelectedInputToken(token);
     setRandomNumber(uuid());
   };
@@ -254,7 +255,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               value={inputAmount}
               chainId={currentChainId}
               selectedAsset={selectedInputToken}
-              assets={COINLISTS?.filter(
+              assets={network?.coins?.filter(
                 (token) => token.address !== selectedOutputToken.address,
               )}
               onSelect={handleSelectedInputToken}
@@ -289,7 +290,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               chainId={currentChainId}
               selectedAsset={selectedOutputToken}
               disableInput={true}
-              assets={COINLISTS?.filter(
+              assets={network?.coins?.filter(
                 (token) => token.address !== selectedInputToken.address,
               )}
               onSelect={handleSelectedOutputToken}

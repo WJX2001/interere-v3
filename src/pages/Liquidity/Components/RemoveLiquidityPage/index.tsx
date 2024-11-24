@@ -1,5 +1,4 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
-import { COINLISTS } from '@/constants';
 import { useERC20, useGetReserves } from '@/hooks/useContract';
 import { CoinListTypes, NetworkTypes } from '@/types';
 import { uuid } from '@/utils';
@@ -216,7 +215,7 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
           value={inputAmount}
           chainId={currentChainId}
           selectedAsset={selectedInputToken}
-          assets={COINLISTS?.filter(
+          assets={network?.coins?.filter(
             (token) => token.address !== selectedOutputToken.address,
           )}
           onSelect={handleSelectedInputToken}
@@ -227,7 +226,7 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
           chainId={currentChainId}
           selectedAsset={selectedOutputToken}
           disableInput={true}
-          assets={COINLISTS?.filter(
+          assets={network?.coins?.filter(
             (token) => token.address !== selectedInputToken.address,
           )}
           onSelect={handleSelectedOutputToken}

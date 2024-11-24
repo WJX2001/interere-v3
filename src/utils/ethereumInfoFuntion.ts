@@ -1,7 +1,8 @@
 import { Address, formatUnits } from 'viem';
 import { CoinListTypes, GetBalanceAndSymbolResult } from '@/types';
-import { useERC20, usePair } from '@/hooks/useContract';
+import { useERC20, useGetFactory, usePair } from '@/hooks/useContract';
 import { UseBalanceReturnType } from 'wagmi';
+import { BigNumber, ethers } from 'ethers';
 
 // obtain decimals
 export async function getDecimalsERC20(
@@ -74,3 +75,48 @@ export async function fetchReserves(
   }
 }
 
+export async function swapTokens(
+  token1Address: Address,
+  token2Address: Address,
+  wethAddress: Address,
+  amountInAll: BigNumber,
+  routerContract: ReturnType<typeof useGetFactory>,
+  userAddress: Address,
+) {
+  const tokens = [token1Address, token2Address];
+  const time = Math.floor(Date.now() / 1000) + 200000;
+  const deadline = ethers.BigNumber.from(time);
+  const amountOut = (await routerContract?.read?.getAmountsOut([
+    amountInAll,
+    tokens,
+  ])) as BigNumber[];
+
+  if (token1Address === wethAddress) {
+    const swapHash = await routerContract?.write?.swapExactETHForTokens([
+      amountOut[1],
+      tokens,
+      userAddress,
+      deadline,
+      [amountInAll],
+    ]);
+    return swapHash;
+  } else if (token2Address === wethAddress) {
+    const swapHash = await routerContract?.write?.swapExactTokensForETH([
+      amountInAll,
+      amountOut[1],
+      tokens,
+      userAddress,
+      deadline,
+    ]);
+    return swapHash;
+  } else {
+    const swapHash = await routerContract?.write?.swapExactTokensForTokens([
+      amountInAll,
+      amountOut[1],
+      tokens,
+      userAddress,
+      deadline,
+    ]);
+    return swapHash;
+  }
+}

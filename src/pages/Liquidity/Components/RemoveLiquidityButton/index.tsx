@@ -69,11 +69,13 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
       setRealRemoveLiquidityHash(realApproveReceiptHash);
     } catch (err) {
       setButtonLoading(false);
+      setInputAmount('');
+      setRealRemoveLiquidityHash(undefined)
+      setProveReceiptHash(undefined)
       enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
         variant: 'error',
         autoHideDuration: 10000,
       });
-      setInputAmount('');
     }
   }, [
     inputAmount,
@@ -113,6 +115,8 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
     if (isRemoveLiquiditySuccess && !tx3Pending && inputAmount) {
       setButtonLoading(false);
       setInputAmount('');
+      setRealRemoveLiquidityHash(undefined)
+      setProveReceiptHash(undefined)
       enqueueSnackbar('Transaction Successful', { variant: 'success' });
     }
   }, [
