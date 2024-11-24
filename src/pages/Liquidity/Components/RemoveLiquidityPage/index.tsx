@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import RemoveLiquidityButton from '../RemoveLiquidityButton';
+import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 // import AddLiquidityButton from '../AddLiquidityButton';
 
 interface Props {
@@ -417,6 +418,10 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
             </Box>
           </Paper>
         </Box>
+        <SwitchErrors
+          balance={selectedInputToken?.balance as string}
+          inputAmount={inputAmount}
+        />
         <Box
           sx={{
             width: '100%',

@@ -1,7 +1,6 @@
 // import LoadingButton from '@/components/primitives/LoadingButton';
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
-import { COINLISTS } from '@/constants';
 import { CoinListTypes, NetworkTypes } from '@/types';
 import {
   getBalanceAndSymbolByWagmi,

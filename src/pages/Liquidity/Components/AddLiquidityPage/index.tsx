@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import AddLiquidityButton from '../AddLiquidityButton';
+import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 
 interface Props {
   network: NetworkTypes;
@@ -444,6 +445,14 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
             </Box>
           </Paper>
         </Box>
+        <SwitchErrors
+          balance={selectedInputToken?.balance as string}
+          inputAmount={inputAmount}
+        />
+        <SwitchErrors
+          balance={selectedOutputToken?.balance as string}
+          inputAmount={outputAmount}
+        />
         <Box
           sx={{
             width: '100%',
