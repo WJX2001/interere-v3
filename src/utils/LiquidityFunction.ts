@@ -95,7 +95,7 @@ export async function quoteAddLiquidity(
       const amountOut = await quoteMintLiquidity(
         address1,
         address2,
-        amountBOptimal,
+        amountADesired,
         amountBDesired,
         factory,
         pair,
@@ -264,7 +264,6 @@ export async function removeLiquidity(
   token1: ReturnType<typeof useERC20>,
   token2: ReturnType<typeof useERC20>,
 ) {
-
   const token1Decimals = await getDecimalsERC20(token1);
   const token2Decimals = await getDecimalsERC20(token2);
 
@@ -306,15 +305,17 @@ export async function removeLiquidity(
       ]);
     return realApproveReceiptHash;
   } else {
-    const realApproveReceiptHash = await routerContract?.write?.removeLiquidity([
-      address1,
-      address2,
-      liquidity,
-      amount1Min,
-      amount2Min,
-      account,
-      deadline,
-    ]);
+    const realApproveReceiptHash = await routerContract?.write?.removeLiquidity(
+      [
+        address1,
+        address2,
+        liquidity,
+        amount1Min,
+        amount2Min,
+        account,
+        deadline,
+      ],
+    );
     return realApproveReceiptHash;
   }
 }

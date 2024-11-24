@@ -36,11 +36,15 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     network.coins[3],
   );
   // obtain token reserve
-  const { reserveArr, pairContract, hasError } = useGetReserves(
-    selectedInputToken.address,
-    selectedOutputToken.address,
-    network.factory,
-  );
+  const { reserveArr, pairContract, hasError, isGetReserveLoading } =
+    useGetReserves(
+      selectedInputToken.address,
+      selectedOutputToken.address,
+      network.factory,
+    );
+
+  // console.log(isGetReserveLoading,'看看')
+
   // Stores the user's balance of liquidity tokens for the current pair
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
@@ -210,7 +214,6 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
       !hasError
     ) {
       setTokenLoading(true);
-      console.log('wjx你好了', isButtonEnabled);
       handleGetLiquidity();
     }
   }, [
@@ -273,10 +276,22 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
         </Box>
         <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
           <Grid2 size={6}>
-            {formatReserve(reserveArr[0], selectedInputToken.symbol)}
+            {isGetReserveLoading ? (
+              <Box sx={{ flex: 1 }}>
+                <CircularProgress color="inherit" size="16px" />
+              </Box>
+            ) : (
+              formatReserve(reserveArr[0], selectedInputToken.symbol)
+            )}
           </Grid2>
           <Grid2 size={6}>
-            {formatReserve(reserveArr[1], selectedOutputToken.symbol)}
+            {isGetReserveLoading ? (
+              <Box sx={{ flex: 1 }}>
+                <CircularProgress color="inherit" size="16px" />
+              </Box>
+            ) : (
+              formatReserve(reserveArr[1], selectedOutputToken.symbol)
+            )}
           </Grid2>
         </Grid2>
         <Divider sx={{ mt: 4 }} />
@@ -296,7 +311,15 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
             Liquidity Pool Tokens
           </Typography>
           <Grid2 justifyContent={'center'} direction={'row'} container>
-            <Grid2 size={12}>{formatReserve(reserveArr[2], 'UNI-V2')}</Grid2>
+            <Grid2 size={12}>
+              {isGetReserveLoading ? (
+                <Box sx={{ flex: 1 }}>
+                  <CircularProgress color="inherit" size="16px" />
+                </Box>
+              ) : (
+                formatReserve(reserveArr[2], 'UNI-V2')
+              )}
+            </Grid2>
           </Grid2>
         </Box>
         <Box

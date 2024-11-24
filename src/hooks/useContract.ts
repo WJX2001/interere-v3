@@ -70,6 +70,7 @@ export const useGetReserves = (
   const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
   const pair = usePair(pairAddress);
   const [isError, setIsError] = useState<boolean>(false);
+  const [isGetReserveLoading,setGetReserveIsLoading] = useState<boolean>(false)
   const getPariAddress = useCallback(async () => {
     const pairAddress = (await factory?.read?.getPair([
       address1,
@@ -100,19 +101,24 @@ export const useGetReserves = (
           liquidityTokens,
         ] as string[];
         setReserves(res);
+        setGetReserveIsLoading(false)
       } else {
         console.log('no reserves yet');
         setReserves(['0', '0', '0']);
+        setGetReserveIsLoading(false)
       }
     } catch {
       setIsError(true);
       setReserves(['0', '0', '0']);
+      setGetReserveIsLoading(false)
     }
   }, [address1, address2, ERC20_1, ERC20_2, pair, address, pairAddress]);
 
   useEffect(() => {
     if (pairAddress !== zeroAddress) {
+      console.log("发动")
       fetchPairAddress();
+      setGetReserveIsLoading(true)
     }
   }, [pairAddress, fetchPairAddress]);
 
@@ -127,8 +133,9 @@ export const useGetReserves = (
       reserveArr: reserves,
       pairContract: pair,
       hasError: isError,
+      isGetReserveLoading
     };
-  }, [reserves, pair, isError]);
+  }, [reserves, pair, isError,isGetReserveLoading]);
 };
 
 
