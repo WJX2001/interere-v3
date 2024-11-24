@@ -17,6 +17,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
+import RemoveLiquidityButton from '../RemoveLiquidityButton';
 // import AddLiquidityButton from '../AddLiquidityButton';
 
 interface Props {
@@ -139,9 +140,9 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
 
   // Turns the account's balance into something nice and readable
   const formatBalance = (balance: string, symbol: string) => {
-    if (balance && symbol)
+    if (balance && symbol) {
       return parseFloat(balance).toPrecision(8) + ' ' + symbol;
-    else return '0.0';
+    } else return '0.0';
   };
 
   const isButtonEnabled = useMemo(() => {
@@ -360,7 +361,7 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
                         textAlign: 'center',
                       })}
                     >
-                      {formatReserve(
+                      {formatBalance(
                         String(tokensOut[2]),
                         selectedOutputToken.symbol,
                       )}
@@ -404,27 +405,26 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
             </Box>
           </Paper>
         </Box>
-        {/* <Box
+        <Box
           sx={{
             width: '100%',
             display: 'flex',
             justifyContent: 'center',
           }}
         >
-          <AddLiquidityButton
+          <RemoveLiquidityButton
             token1Address={selectedInputToken.address}
             token2Address={selectedOutputToken.address}
             isButtonEnabled={isButtonEnabled}
             inputAmount={inputAmount}
-            outputAmount={outputAmount}
             network={network}
             userAddress={userAddress as Address}
             token1={erc20TokenInputContract}
             token2={erc20TokenOutputContract}
             setInputAmount={setInputAmount}
-            setOutputAmount={setOutputAmount}
+            pairContract={pairContract}
           />
-        </Box> */}
+        </Box>
       </Box>
     </>
   );

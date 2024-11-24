@@ -146,6 +146,13 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
     else return '0.0';
   };
 
+  // Turns the account's balance into something nice and readable
+  const formatBalance = (balance: string, symbol: string) => {
+    if (balance && symbol) {
+      return parseFloat(balance).toPrecision(8) + ' ' + symbol;
+    } else return '0.0';
+  };
+
   const isButtonEnabled = useMemo(() => {
     const parsedInput1 = parseFloat(inputAmount);
     const parsedInput2 = parseFloat(outputAmount);
@@ -350,7 +357,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                         textAlign: 'center',
                       })}
                     >
-                      {formatReserve(
+                      {formatBalance(
                         liquidityOut[0],
                         selectedInputToken.symbol,
                       )}
@@ -371,7 +378,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                         textAlign: 'center',
                       })}
                     >
-                      {formatReserve(
+                      {formatBalance(
                         liquidityOut[1],
                         selectedOutputToken.symbol,
                       )}
@@ -408,7 +415,7 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
                       <CircularProgress color="inherit" size="16px" />
                     </Box>
                   ) : (
-                    formatReserve(liquidityOut[2] ?? ['0','0','0'], 'UNI-V2')
+                    formatReserve(liquidityOut[2] ?? ['0', '0', '0'], 'UNI-V2')
                   )}
                 </Typography>
               </Grid2>

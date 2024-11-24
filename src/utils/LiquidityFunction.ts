@@ -230,3 +230,91 @@ export async function quoteRemoveLiquidity(
 
   return [liquidity, Aout, Bout];
 }
+
+export async function getPairContractApproveReceipt(
+  liquidity_tokens: string,
+  pair: ReturnType<typeof usePair>,
+  routerContractAddress: Address,
+) {
+  const Getliquidity = (liquidity_tokens: number) => {
+    if (liquidity_tokens < 0.001) {
+      return ethers.BigNumber.from(liquidity_tokens * 10 ** 18);
+    }
+    return ethers.utils.parseUnits(String(liquidity_tokens), 18);
+  };
+  const liquidity = Getliquidity(Number(liquidity_tokens));
+  const pairApproveReceiptHash = await pair?.write?.approve([
+    routerContractAddress,
+    liquidity,
+  ]);
+  return {
+    pairApproveReceiptHash,
+  };
+}
+
+export async function removeLiquidity(
+  address1: Address,
+  address2: Address,
+  liquidity_tokens: string,
+  amount1min: string,
+  amount2min: string,
+  wethAddress: Address,
+  routerContract: ReturnType<typeof useRouterContract>,
+  account: Address,
+  token1: ReturnType<typeof useERC20>,
+  token2: ReturnType<typeof useERC20>,
+) {
+
+  const token1Decimals = await getDecimalsERC20(token1);
+  const token2Decimals = await getDecimalsERC20(token2);
+
+  const amount1Min = ethers.utils.parseUnits(amount1min, token1Decimals);
+  const amount2Min = ethers.utils.parseUnits(amount2min, token2Decimals);
+
+  const time = Math.floor(Date.now() / 1000) + 200000;
+  const deadline = ethers.BigNumber.from(time);
+
+  const Getliquidity = (liquidity_tokens: number) => {
+    if (liquidity_tokens < 0.001) {
+      return ethers.BigNumber.from(liquidity_tokens * 10 ** 18);
+    }
+    return ethers.utils.parseUnits(String(liquidity_tokens), 18);
+  };
+
+  const liquidity = Getliquidity(Number(liquidity_tokens));
+
+  if (address1 === wethAddress) {
+    const realApproveReceiptHash =
+      await routerContract?.write?.removeLiquidityETH([
+        address2,
+        liquidity,
+        amount1Min,
+        amount2Min,
+        account,
+        deadline,
+      ]);
+    return realApproveReceiptHash;
+  } else if (address2 === wethAddress) {
+    const realApproveReceiptHash =
+      await routerContract?.write?.removeLiquidityETH([
+        address1,
+        liquidity,
+        amount1Min,
+        amount2Min,
+        account,
+        deadline,
+      ]);
+    return realApproveReceiptHash;
+  } else {
+    const realApproveReceiptHash = await routerContract?.write?.removeLiquidity([
+      address1,
+      address2,
+      liquidity,
+      amount1Min,
+      amount2Min,
+      account,
+      deadline,
+    ]);
+    return realApproveReceiptHash;
+  }
+}
