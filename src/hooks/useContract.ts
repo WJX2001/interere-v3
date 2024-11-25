@@ -7,6 +7,7 @@ import ROUTER from '@/build/UniswapV2Router02.json';
 import FACTORY from '@/build/IUniswapV2Factory.json';
 import ERC20 from '@/build/ERC20.json';
 import PAIR from '@/build/IUniswapV2Pair.json';
+import PocketIndex from '@/build/PocketIndex.json';
 import { AbiType } from '@/types';
 import { fetchReserves } from '@/utils/ethereumInfoFuntion';
 type UseContractOptions = {
@@ -58,6 +59,10 @@ export const usePair = (address: Address) => {
   return useContract(address, (PAIR as AbiType).abi);
 };
 
+export const usePocket = (address: Address) => {
+  return useContract(address, (PocketIndex as AbiType).abi);
+};
+
 export const useGetReserves = (
   address1: Address,
   address2: Address,
@@ -70,7 +75,8 @@ export const useGetReserves = (
   const [pairAddress, setPairAddress] = useState<Address>(zeroAddress);
   const pair = usePair(pairAddress);
   const [isError, setIsError] = useState<boolean>(false);
-  const [isGetReserveLoading,setGetReserveIsLoading] = useState<boolean>(false)
+  const [isGetReserveLoading, setGetReserveIsLoading] =
+    useState<boolean>(false);
   const getPariAddress = useCallback(async () => {
     const pairAddress = (await factory?.read?.getPair([
       address1,
@@ -101,24 +107,24 @@ export const useGetReserves = (
           liquidityTokens,
         ] as string[];
         setReserves(res);
-        setGetReserveIsLoading(false)
+        setGetReserveIsLoading(false);
       } else {
         console.log('no reserves yet');
         setReserves(['0', '0', '0']);
-        setGetReserveIsLoading(false)
+        setGetReserveIsLoading(false);
       }
     } catch {
       setIsError(true);
       setReserves(['0', '0', '0']);
-      setGetReserveIsLoading(false)
+      setGetReserveIsLoading(false);
     }
   }, [address1, address2, ERC20_1, ERC20_2, pair, address, pairAddress]);
 
   useEffect(() => {
     if (pairAddress !== zeroAddress) {
-      console.log("发动")
+      console.log('发动');
       fetchPairAddress();
-      setGetReserveIsLoading(true)
+      setGetReserveIsLoading(true);
     }
   }, [pairAddress, fetchPairAddress]);
 
@@ -133,14 +139,11 @@ export const useGetReserves = (
       reserveArr: reserves,
       pairContract: pair,
       hasError: isError,
-      isGetReserveLoading
+      isGetReserveLoading,
     };
-  }, [reserves, pair, isError,isGetReserveLoading]);
+  }, [reserves, pair, isError, isGetReserveLoading]);
 };
-
 
 // export const useERC20PairDecimals = () => {
 
 // }
-
-

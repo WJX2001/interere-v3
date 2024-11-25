@@ -2,11 +2,11 @@ import { Button, ButtonGroup, colors } from '@mui/material';
 import React from 'react';
 
 interface Props {
-  setAddliquidity: (param: boolean) => void;
+  setIndexPage: (param: boolean) => void;
 }
 
 const SwitchButton: React.FC<Props> = (props) => {
-  const { setAddliquidity } = props;
+  const { setIndexPage } = props;
   const changeStyle = (addLiquidity: boolean) => {
     if (addLiquidity) {
       const add_button = document.getElementById('add-button');
@@ -52,11 +52,11 @@ const SwitchButton: React.FC<Props> = (props) => {
             },
           })}
           onClick={() => {
-            setAddliquidity(true);
+            setIndexPage(true);
             changeStyle(true);
           }}
         >
-          Add Liquidity
+          Buy Index
         </Button>
         <Button
           id="remove-button"
@@ -68,11 +68,11 @@ const SwitchButton: React.FC<Props> = (props) => {
             },
           })}
           onClick={() => {
-            setAddliquidity(false);
+            setIndexPage(false);
             changeStyle(false);
           }}
         >
-          Remove Liquidity
+          Sell Index
         </Button>
       </ButtonGroup>
     </>

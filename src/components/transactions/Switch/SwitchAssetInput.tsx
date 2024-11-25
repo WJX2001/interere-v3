@@ -33,6 +33,7 @@ interface AssetInputProps {
   assets: CoinListTypes[];
   selectedAsset: CoinListTypes;
   isMaxSelected?: boolean;
+  disableSelectToken?: boolean;
   onSelect?: (asset: CoinListTypes) => void;
   onChange?: (value: string) => void;
 }
@@ -45,6 +46,7 @@ const SwitchAssetInput = ({
   disableInput,
   selectedAsset,
   loading = false,
+  disableSelectToken = false,
   onChange,
   onSelect,
 }: AssetInputProps) => {
@@ -151,6 +153,7 @@ const SwitchAssetInput = ({
             sx={{ p: 0, '&:hover': { backgroundColor: 'transparent' } }}
             onClick={() => setAnchorEl(inputRef.current)}
             endIcon={open ? <ExpandLess /> : <ExpandMore />}
+            disabled={disableSelectToken}
           >
             <ExternalTokenIcon
               symbol={selectedAsset?.symbol}

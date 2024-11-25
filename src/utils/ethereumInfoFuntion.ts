@@ -1,6 +1,11 @@
 import { Address, formatUnits } from 'viem';
 import { CoinListTypes, GetBalanceAndSymbolResult } from '@/types';
-import { useERC20, useGetFactory, usePair } from '@/hooks/useContract';
+import {
+  useERC20,
+  useGetFactory,
+  usePair,
+  usePocket,
+} from '@/hooks/useContract';
 import { UseBalanceReturnType } from 'wagmi';
 import { BigNumber, ethers } from 'ethers';
 
@@ -43,7 +48,7 @@ export async function getBalanceAndSymbolByWagmi(
     }
   } catch (error) {
     console.log('The getBalanceAndSymbol function had an error!');
-    console.log(error);
+    console.log(error, '错了');
     return false;
   }
 }
@@ -120,3 +125,45 @@ export async function swapTokens(
     return swapHash;
   }
 }
+
+export async function allowance(
+  ERC20Contract: ReturnType<typeof useERC20>,
+  spender: Address,
+  userAddress: Address,
+) {
+  try {
+    const tokenDecimals = await getDecimalsERC20(ERC20Contract);
+    const allowance = await ERC20Contract?.read?.allowance([
+      userAddress,
+      spender,
+    ]);
+    return formatUnits(allowance as bigint, tokenDecimals);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function pitchAmount(
+  pocketContract: ReturnType<typeof usePocket>,
+  erc20Contract: ReturnType<typeof useERC20>,
+  userAddress: Address,
+  amount: string,
+) {
+  const tokenDecimals = await getDecimalsERC20(erc20Contract);
+  const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
+  try {
+    const res = await pocketContract?.write?.pitchAmount([
+      parsedAmount,
+      userAddress,
+    ]);
+    return res;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function getApproveHash(
+  erc20Contract: ReturnType<typeof useERC20>,
+  spender: Address,
+  amount: string,
+) {}

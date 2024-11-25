@@ -13,6 +13,7 @@ export interface CoinListTypes {
   address: Address;
   logoURI: string;
   balance?: string;
+  allowance?: string
 }
 
 export interface TokenInfoTypes {
