@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import logo from '/aave-com-logo-header.svg';
-
+import newLogo from '@/assets/newLogo.svg'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NavItems from './components/NavItems';
 import styles from './styles/AppHeader.module.less'
@@ -60,7 +60,7 @@ const AppHeader = () => {
           }}
         >
           <a href="/">
-            <img src={logo} alt="AAVE" width={72} height={20} />
+            <img src={newLogo} alt="AAVE" width={82} height={30} />
           </a>
         </Box>
         <Box sx={{ display: { xs: 'none', md: 'block' } }}>

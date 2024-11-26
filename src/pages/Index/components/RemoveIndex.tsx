@@ -3,9 +3,7 @@ import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { CoinListTypes, NetworkTypes } from '@/types';
 import {
   allowance,
-  getApproveHash,
   getBalanceAndSymbolByWagmi,
-  pitchAmount,
   sellIndexPart,
 } from '@/utils/ethereumInfoFuntion';
 import { Box, Divider } from '@mui/material';
@@ -100,15 +98,15 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     }
   };
 
-  const isButtonDisable = useMemo(() => {
-    const parsedInput1 = parseFloat(inputAmount);
-    return (
-      selectedInputToken?.address &&
-      !isNaN(parsedInput1) &&
-      0 < parsedInput1 &&
-      parsedInput1 <= parseFloat(selectedInputToken.allowance as string)
-    );
-  }, [inputAmount, selectedInputToken.address, selectedInputToken.allowance]);
+  // const isButtonDisable = useMemo(() => {
+  //   const parsedInput1 = parseFloat(inputAmount);
+  //   return (
+  //     selectedInputToken?.address &&
+  //     !isNaN(parsedInput1) &&
+  //     0 < parsedInput1 &&
+  //     parsedInput1 <= parseFloat(selectedInputToken.allowance as string)
+  //   );
+  // }, [inputAmount, selectedInputToken.address, selectedInputToken.allowance]);
 
   const remove = async () => {
     setButtonLoading(true);
