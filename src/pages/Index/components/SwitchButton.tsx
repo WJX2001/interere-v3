@@ -39,7 +39,7 @@ const SwitchButton: React.FC<Props> = (props) => {
           '& .MuiButton-root': {
             flex: 1, // 让按钮宽度均分
           },
-          height:'50px'
+          height:'55px'
         }}
       >
         <Button

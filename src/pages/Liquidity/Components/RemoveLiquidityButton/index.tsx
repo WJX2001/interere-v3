@@ -70,8 +70,8 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
     } catch (err) {
       setButtonLoading(false);
       setInputAmount('');
-      setRealRemoveLiquidityHash(undefined)
-      setProveReceiptHash(undefined)
+      setRealRemoveLiquidityHash(undefined);
+      setProveReceiptHash(undefined);
       enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
         variant: 'error',
         autoHideDuration: 10000,
@@ -90,7 +90,7 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
     enqueueSnackbar,
   ]);
 
-  const handleGetApproveHash = useCallback(async () => {
+  const handleGetApproveHash = async () => {
     setButtonLoading(true);
     const { pairApproveReceiptHash } = await getPairContractApproveReceipt(
       inputAmount,
@@ -98,7 +98,7 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
       network?.router?.address as Address,
     );
     setProveReceiptHash(pairApproveReceiptHash);
-  }, [inputAmount, network?.router?.address, pairContract]);
+  };
 
   useEffect(() => {
     if (isPariApproveHash && !txPariApprovePending && inputAmount) {
@@ -115,8 +115,8 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
     if (isRemoveLiquiditySuccess && !tx3Pending && inputAmount) {
       setButtonLoading(false);
       setInputAmount('');
-      setRealRemoveLiquidityHash(undefined)
-      setProveReceiptHash(undefined)
+      setRealRemoveLiquidityHash(undefined);
+      setProveReceiptHash(undefined);
       enqueueSnackbar('Transaction Successful', { variant: 'success' });
     }
   }, [

@@ -166,4 +166,14 @@ export async function getApproveHash(
   erc20Contract: ReturnType<typeof useERC20>,
   spender: Address,
   amount: string,
-) {}
+) {
+  const tokenDecimals = await getDecimalsERC20(erc20Contract);
+  const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
+  const approveHash = await erc20Contract?.write?.approve([
+    spender,
+    parsedAmount,
+  ]);
+  return {
+    approveHash
+  };
+}
