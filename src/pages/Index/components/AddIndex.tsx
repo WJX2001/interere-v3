@@ -111,6 +111,7 @@ const AddIndex: React.FC<Props> = ({ network }) => {
 
   const deploy = async () => {
     setButtonLoading(true);
+    // usdt的余额 大于 usdt的 allowance 并且 输入的值必须大于 allowance的时候 执行 erc20的approve函数
     if (
       (selectedInputToken?.balance ?? 0) >
         (selectedInputToken?.allowance ?? 0) &&
@@ -131,7 +132,7 @@ const AddIndex: React.FC<Props> = ({ network }) => {
         });
         setProveReceiptHash(undefined);
       }
-    } else {
+    } else { // 否则执行 pitchAmount 函数
       try {
         const pitchHash = await pitchAmount(
           pocketIndexContract,
