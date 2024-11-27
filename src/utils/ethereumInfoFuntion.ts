@@ -156,9 +156,14 @@ export async function pitchAmount(
       parsedAmount,
       userAddress,
     ]);
-    return res;
+    return {
+      receipHx: res,
+    };
   } catch (e) {
-    console.log(e);
+    console.log(e, 'wjx');
+    return {
+      receipHx: undefined,
+    };
   }
 }
 
@@ -178,21 +183,4 @@ export async function getApproveHash(
   };
 }
 
-export async function sellIndexPart(
-  pocketContract: ReturnType<typeof usePocket>,
-  erc20Contract: ReturnType<typeof useERC20>,
-  userAddress: Address,
-  amount: string,
-) {
-  const tokenDecimals = await getDecimalsERC20(erc20Contract);
-  const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
-  try {
-    const res = await pocketContract?.write?.disolveWithLP([
-      parsedAmount,
-      userAddress,
-    ]);
-    return res;
-  } catch (e) {
-    console.log(e, '错了啊');
-  }
-}
+

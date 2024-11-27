@@ -4,7 +4,6 @@ import { CoinListTypes, NetworkTypes } from '@/types';
 import {
   allowance,
   getBalanceAndSymbolByWagmi,
-  sellIndexPart,
 } from '@/utils/ethereumInfoFuntion';
 import { Box, Divider } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,6 +19,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { PocketIndexAddress, pocketIndexAddress } from '@/constants/network';
 import { useSnackbar } from 'notistack';
 import RemoveIcon from '@mui/icons-material/Remove';
+import { sellIndexPart } from '@/utils/indexFunction';
 interface Props {
   network: NetworkTypes;
 }
@@ -110,13 +110,25 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
 
   const remove = async () => {
     setButtonLoading(true);
-    const res = await sellIndexPart(
+    debugger;
+    const { receipHx } = await sellIndexPart(
       pocketIndexContract,
       erc20TokenInputContract,
       userAddress as Address,
-      inputAmount
-    )
-    console.log(res, '回执来了');
+      inputAmount,
+    );
+    console.log(receipHx, '回执来了');
+    if (receipHx) {
+      setProveReceiptHash(receipHx);
+    } else {
+      setButtonLoading(false);
+      enqueueSnackbar('Approve Failed', {
+        variant: 'error',
+        autoHideDuration: 10000,
+      });
+      setProveReceiptHash(undefined);
+    }
+
     // try {
     //   const res = await sellIndexPart(
     //     pocketIndexContract,

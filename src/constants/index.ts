@@ -43,7 +43,7 @@ export const COINLISTS: CoinListTypes[] = [
   {
     name: 'Tether USD',
     symbol: 'USDT',
-    address: '0xA46Ba1732444DF2b3c0c4F98186E234B69e7D215',
+    address: '0xdD8f107d41705a0E741d2f1143513562A43B47eb',
     logoURI:
       'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
   },

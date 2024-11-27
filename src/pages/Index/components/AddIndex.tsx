@@ -19,7 +19,7 @@ import {
 import { useERC20, usePocket } from '@/hooks/useContract';
 import LoadingButton from '@mui/lab/LoadingButton';
 import StoreIcon from '@mui/icons-material/Store';
-import { PocketIndexAddress, pocketIndexAddress } from '@/constants/network';
+import { PocketIndexAddress } from '@/constants/network';
 import { useSnackbar } from 'notistack';
 interface Props {
   network: NetworkTypes;
@@ -30,7 +30,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
   const balanceData = useBalance({
     address: userAddress,
   });
-  const chainId = useChainId();
   const { enqueueSnackbar } = useSnackbar();
   const [inputAmount, setInputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
@@ -52,10 +51,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
       hash: pitchReceiptHash,
     });
 
-  const pocketAddress = useMemo(() => {
-    return pocketIndexAddress.get(chainId);
-  }, [chainId]);
-
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,
@@ -69,7 +64,7 @@ const AddIndex: React.FC<Props> = ({ network }) => {
       const { balance, symbol } = res;
       const allowanceData = await allowance(
         erc20TokenInputContract,
-        pocketAddress,
+        PocketIndexAddress,
         userAddress as Address,
       );
       console.log(allowanceData, '我看看');
@@ -88,7 +83,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
     network,
     balanceData,
     selectedInputToken,
-    pocketAddress,
   ]);
 
   const handleInputChange = async (value: string) => {
@@ -110,6 +104,7 @@ const AddIndex: React.FC<Props> = ({ network }) => {
   }, [inputAmount, selectedInputToken.address, selectedInputToken.balance]);
 
   const deploy = async () => {
+    debugger;
     setButtonLoading(true);
     // usdt的余额 大于 usdt的 allowance 并且 输入的值必须大于 allowance的时候 执行 erc20的approve函数
     if (
@@ -120,7 +115,7 @@ const AddIndex: React.FC<Props> = ({ network }) => {
       try {
         const { approveHash } = await getApproveHash(
           erc20TokenInputContract,
-          pocketAddress,
+          PocketIndexAddress,
           inputAmount,
         );
         setProveReceiptHash(approveHash as Hash);
@@ -132,18 +127,18 @@ const AddIndex: React.FC<Props> = ({ network }) => {
         });
         setProveReceiptHash(undefined);
       }
-    } else { // 否则执行 pitchAmount 函数
-      try {
-        const pitchHash = await pitchAmount(
-          pocketIndexContract,
-          erc20TokenInputContract,
-          userAddress as Address,
-          inputAmount,
-        );
-        setPitchReceiptHash(pitchHash);
-      } catch (e) {
+    } else {
+      const { receipHx } = await pitchAmount(
+        pocketIndexContract,
+        erc20TokenInputContract,
+        userAddress as Address,
+        inputAmount,
+      );
+      if (receipHx) {
+        setPitchReceiptHash(receipHx);
+      } else {
         setButtonLoading(false);
-        enqueueSnackbar('Approve Failed (' + (e as Error).message + ')', {
+        enqueueSnackbar('Approve Failed', {
           variant: 'error',
           autoHideDuration: 10000,
         });

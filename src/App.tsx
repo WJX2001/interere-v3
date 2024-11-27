@@ -7,6 +7,7 @@ import React from 'react';
 import { SnackbarProvider } from 'notistack';
 import Index from './pages/Index';
 import Liquidity from './pages/Liquidity';
+
 function App() {
   return (
     <>
