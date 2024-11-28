@@ -138,11 +138,10 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         [selectedInputToken.address, selectedOutputToken.address],
       ])) as bigint[];
       const amount_out = formatUnits(values_out[1], decimal2);
-      console.log(amount_out,'')
       setOutputAmount(amount_out);
       setOutputLoading(false);
     } catch(e) {
-      console.log(e,'发生错误')
+      console.error(e,'error')
       setOutputAmount('NA');
       setOutputLoading(false);
     }
@@ -181,7 +180,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   };
 
   const handleSelectedInputToken = (token: CoinListTypes) => {
-    console.log(token,'你在这啊啊')
     setSelectedInputToken(token);
     setRandomNumber(uuid());
   };
@@ -347,6 +345,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
               userAddress={userAddress as Address}
               setInputAmount={setInputAmount}
               setDebounceInputAmount={setDebounceInputAmount}
+              setOutputAmount={setOutputAmount}
             />
           </Box>
 

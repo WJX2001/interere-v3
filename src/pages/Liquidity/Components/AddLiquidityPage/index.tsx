@@ -43,7 +43,6 @@ const AddLiquidityPage: React.FC<Props> = ({ network }) => {
       network.factory,
     );
 
-  // console.log(isGetReserveLoading,'看看')
 
   // Stores the user's balance of liquidity tokens for the current pair
   const erc20TokenInputContract = useERC20(selectedInputToken.address);

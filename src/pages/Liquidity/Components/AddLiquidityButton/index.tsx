@@ -127,7 +127,6 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
       inputAmount &&
       outputAmount
     ) {
-      console.log('拿到回执');
       handleAddLiquidity();
     }
   }, [
@@ -142,18 +141,26 @@ const AddLiquidityButton: React.FC<Props> = (props) => {
 
   const handleGetApproveHash = async () => {
     setButtonLoading(true);
-    const { tx1Hash, tx2Hash, amountIn1, amountIn2 } =
-      await getPairProveReceipt(
-        inputAmount,
-        outputAmount,
-        network?.router,
-        token1,
-        token2,
-      );
-    setApproveReceiptHash1(tx1Hash);
-    setApproveReceiptHash2(tx2Hash);
-    setAmountIn1Bigint(amountIn1);
-    setAmountIn2Bigint(amountIn2);
+    try {
+      const { tx1Hash, tx2Hash, amountIn1, amountIn2 } =
+        await getPairProveReceipt(
+          inputAmount,
+          outputAmount,
+          network?.router,
+          token1,
+          token2,
+        );
+      setApproveReceiptHash1(tx1Hash);
+      setApproveReceiptHash2(tx2Hash);
+      setAmountIn1Bigint(amountIn1);
+      setAmountIn2Bigint(amountIn2);
+    } catch (err) {
+      setButtonLoading(true);
+      enqueueSnackbar('Approve Failed (' + (err as Error).message + ')', {
+        variant: 'error',
+        autoHideDuration: 5000,
+      });
+    }
   };
 
   return (

@@ -127,7 +127,6 @@ export const useGetReserves = (
 
   useEffect(() => {
     if (pairAddress !== zeroAddress) {
-      console.log('发动');
       fetchPairAddress();
       setGetReserveIsLoading(true);
     }
@@ -149,6 +148,3 @@ export const useGetReserves = (
   }, [reserves, pair, isError, isGetReserveLoading]);
 };
 
-// export const useERC20PairDecimals = () => {
-
-// }

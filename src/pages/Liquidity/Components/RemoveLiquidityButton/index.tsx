@@ -92,17 +92,24 @@ const RemoveLiquidityButton: React.FC<Props> = (props) => {
 
   const handleGetApproveHash = async () => {
     setButtonLoading(true);
-    const { pairApproveReceiptHash } = await getPairContractApproveReceipt(
-      inputAmount,
-      pairContract,
-      network?.router?.address as Address,
-    );
-    setProveReceiptHash(pairApproveReceiptHash);
+    try {
+      const { pairApproveReceiptHash } = await getPairContractApproveReceipt(
+        inputAmount,
+        pairContract,
+        network?.router?.address as Address,
+      );
+      setProveReceiptHash(pairApproveReceiptHash);
+    } catch (err) {
+      setButtonLoading(false);
+      enqueueSnackbar('Approve Failed (' + (err as Error).message + ')', {
+        variant: 'error',
+        autoHideDuration: 10000,
+      });
+    }
   };
 
   useEffect(() => {
     if (isPariApproveHash && !txPariApprovePending && inputAmount) {
-      console.log('拿到回执');
       handleRemoveLiquidity();
     }
   }, [

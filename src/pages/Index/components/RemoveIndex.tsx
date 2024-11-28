@@ -74,7 +74,6 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
       lpTokenContract,
       userAddress as Address,
     );
-    console.log(formatEther(res), '我看看结果');
     setLpTokenBalance(formatEther(res));
   }, [lpTokenContract, userAddress]);
 
@@ -94,7 +93,6 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
         PocketIndexAddress,
         userAddress as Address,
       );
-      console.log(allowanceData, '我看看');
       setSelectedInputToken((pre) => {
         return {
           ...pre,
@@ -139,9 +137,8 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
         PocketIndexAddress,
       );
       setApproveByLpTokenReceipt(approveHash);
-      console.log(approveHash, '看看你');
     } catch (e) {
-      console.log('error content:', e);
+      console.error('error content:', e);
       setButtonLoading(false);
       enqueueSnackbar('Approve Failed', {
         variant: 'error',
@@ -201,7 +198,6 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
   // after approve token, call sell index
   useEffect(() => {
     if (isApproveByLpTokenSuccess && !isApproveByLpTokenPending) {
-      console.log('拿到lp批准回执');
       afterApproveAndSellIndex();
     }
   }, [

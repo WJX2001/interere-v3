@@ -18,6 +18,7 @@ import { Address, zeroAddress } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
 import RemoveLiquidityButton from '../RemoveLiquidityButton';
 import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
+import RemoveLiquidityErrors from '@/components/transactions/Liquidity/removeLiquidityErrors';
 // import AddLiquidityButton from '../AddLiquidityButton';
 
 interface Props {
@@ -174,13 +175,11 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
       network.factory,
       pairContract,
     );
-    console.log('你来了终于', res);
     setTokensOut(res);
     setTokenLoading(false);
   }, [inputAmount, network.factory, pairContract, reserveArr]);
 
   useEffect(() => {
-    console.log(isButtonEnabled, 'ni咋回事');
     if (
       isButtonEnabled &&
       reserveArr &&
@@ -418,6 +417,11 @@ const RemoveLiquidityPage: React.FC<Props> = ({ network }) => {
             </Box>
           </Paper>
         </Box>
+        <RemoveLiquidityErrors
+          balance={reserveArr[2]}
+          inputAmount={inputAmount}
+          content="The input value must be less than the liquidity pool token."
+        />
         <SwitchErrors
           balance={selectedInputToken?.balance as string}
           inputAmount={inputAmount}

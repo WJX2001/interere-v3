@@ -67,7 +67,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
         PocketIndexAddress,
         userAddress as Address,
       );
-      console.log(allowanceData, '我看看');
       setSelectedInputToken((pre) => {
         return {
           ...pre,
@@ -147,7 +146,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
   };
   useEffect(() => {
     if (isPitchSuccess && !isPitchPending) {
-      console.log('拿到回执');
       setButtonLoading(false);
       enqueueSnackbar('Pitch Successful', { variant: 'success' });
       setPitchReceiptHash(undefined);
@@ -156,7 +154,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
 
   useEffect(() => {
     if (isApproveSuccess && !isApprovePending) {
-      console.log('拿到回执');
       setButtonLoading(false);
       enqueueSnackbar('Approve Successful', { variant: 'success' });
       setProveReceiptHash(undefined);

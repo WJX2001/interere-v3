@@ -34,7 +34,7 @@ const Liquidity: React.FC<Props> = ({ network }) => {
           sx={{
             width: '33.3%',
             minWidth: '250px',
-            maxHeight: 'calc(100vh - 20px)',
+            // maxHeight: 'calc(100vh - 20px)',
             overflowY: 'auto',
           }}
         >

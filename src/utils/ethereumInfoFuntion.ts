@@ -17,7 +17,7 @@ export async function getDecimalsERC20(
     const decimals = (await token?.read?.decimals()) as number;
     return decimals;
   } catch {
-    console.log('No tokenDecimals function for this token, set to 0');
+    console.error('No tokenDecimals function for this token, set to 0');
     return 0;
   }
 }
@@ -46,9 +46,8 @@ export async function getBalanceAndSymbolByWagmi(
         symbol: symbol,
       };
     }
-  } catch (error) {
-    console.log('The getBalanceAndSymbol function had an error!');
-    console.log(error, '错了');
+  } catch {
+    console.error('The getBalanceAndSymbol function had an error!');
     return false;
   }
 }
@@ -75,7 +74,7 @@ export async function fetchReserves(
       formatUnits(results[1], decimal2),
     ];
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return [0, 0];
   }
 }
@@ -139,7 +138,7 @@ export async function allowance(
     ]);
     return formatUnits(allowance as bigint, tokenDecimals);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 }
 
@@ -160,7 +159,7 @@ export async function pitchAmount(
       receipHx: res,
     };
   } catch (e) {
-    console.log(e, 'wjx');
+    console.error(e, 'error');
     return {
       receipHx: undefined,
     };

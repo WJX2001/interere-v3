@@ -10,7 +10,7 @@ export async function getDecimals(
     const decimals = (await token?.read?.decimals()) as number;
     return decimals;
   } catch {
-    console.log('No tokenDecimals function for this token, set to 0');
+    console.error('No tokenDecimals function for this token, set to 0');
     return 0;
   }
 }
@@ -54,10 +54,9 @@ export async function getIndexLpTokenBalance(
 ): Promise<bigint> {
   try {
     const balance = await lpTokenContract?.read?.balanceOf([userAddress]);
-    console.log(balance);
     return balance as bigint;
   } catch (e) {
-    console.log(e, 'error');
+    console.error(e, 'error');
     return 0n;
   }
 }

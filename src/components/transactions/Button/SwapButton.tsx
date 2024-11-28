@@ -28,6 +28,7 @@ interface Props {
   };
   setInputAmount: (value: string) => void;
   setDebounceInputAmount: (value: string) => void;
+  setOutputAmount: (value: string) => void;
 }
 
 const SwapButton: React.FC<Props> = (props) => {
@@ -42,6 +43,7 @@ const SwapButton: React.FC<Props> = (props) => {
     coin1Balance,
     setInputAmount,
     setDebounceInputAmount,
+    setOutputAmount
   } = props;
   const [approveHash, setApproveHash] = useState<Hash>();
   const [amountInAll, setAmountInAll] = useState<BigNumber>();
@@ -61,15 +63,15 @@ const SwapButton: React.FC<Props> = (props) => {
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    console.log(isSuccessSwap,'isSuccessSwap')
-    console.log(swapPending,'swapPending')
+    console.log(isSuccessSwap, 'isSuccessSwap');
+    console.log(swapPending, 'swapPending');
     if (isSuccessSwap && !swapPending) {
-      console.log("来了啊")
       setButtonLoading(false);
       setInputAmount('');
       setDebounceInputAmount('');
-      setRealSwapHash(undefined)
-      setApproveHash(undefined)
+      setOutputAmount('')
+      setRealSwapHash(undefined);
+      setApproveHash(undefined);
       enqueueSnackbar('Transaction Successful', { variant: 'success' });
     }
   }, [
@@ -78,6 +80,7 @@ const SwapButton: React.FC<Props> = (props) => {
     setDebounceInputAmount,
     setInputAmount,
     enqueueSnackbar,
+    setOutputAmount,
     inputAmount,
   ]);
 
@@ -96,8 +99,9 @@ const SwapButton: React.FC<Props> = (props) => {
       setButtonLoading(false);
       setInputAmount('');
       setDebounceInputAmount('');
-      setRealSwapHash(undefined)
-      setApproveHash(undefined)
+      setOutputAmount('')
+      setRealSwapHash(undefined);
+      setApproveHash(undefined);
       enqueueSnackbar('Transaction Failed (' + (err as Error).message + ')', {
         variant: 'error',
         autoHideDuration: 10000,
@@ -113,6 +117,7 @@ const SwapButton: React.FC<Props> = (props) => {
     setDebounceInputAmount,
     setInputAmount,
     enqueueSnackbar,
+    setOutputAmount
   ]);
 
   useEffect(() => {
@@ -122,8 +127,6 @@ const SwapButton: React.FC<Props> = (props) => {
     }
   }, [
     isSuccess,
-    setDebounceInputAmount,
-    setInputAmount,
     enqueueSnackbar,
     inputAmount,
     realSwapHanlde,
