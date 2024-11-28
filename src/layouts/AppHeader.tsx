@@ -7,7 +7,6 @@ import {
   useTheme,
 } from '@mui/material';
 import React from 'react';
-import logo from '/aave-com-logo-header.svg';
 import newLogo from '@/assets/newLogo.svg'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NavItems from './components/NavItems';
