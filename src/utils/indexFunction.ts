@@ -1,11 +1,35 @@
-import { useERC20, usePocket } from "@/hooks/useContract";
-import { getDecimalsERC20 } from "./ethereumInfoFuntion";
-import { Address } from "viem";
-import { ethers } from "ethers";
+import { useERC20, useLpToken, usePocket } from '@/hooks/useContract';
+import { getDecimalsERC20 } from './ethereumInfoFuntion';
+import { Address } from 'viem';
+import { ethers } from 'ethers';
 
+export async function getDecimals(
+  token: ReturnType<typeof useLpToken>,
+): Promise<number> {
+  try {
+    const decimals = (await token?.read?.decimals()) as number;
+    return decimals;
+  } catch {
+    console.log('No tokenDecimals function for this token, set to 0');
+    return 0;
+  }
+}
 
-export async function approveByindexLPToken() {
-  
+export async function approveByindexLPToken(
+  lpTokenContract: ReturnType<typeof useLpToken>,
+  amount: string,
+  spender: Address,
+) {
+
+  const tokenDecimals = await getDecimals(lpTokenContract);
+  const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
+  const approveHash = await lpTokenContract?.write?.approve([
+    spender,
+    parsedAmount,
+  ]);
+  return {
+    approveHash
+  }
 }
 
 export async function sellIndexPart(

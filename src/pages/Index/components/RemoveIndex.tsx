@@ -14,12 +14,16 @@ import {
   useChainId,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { useERC20, usePocket } from '@/hooks/useContract';
+import { useERC20, useLpToken, usePocket } from '@/hooks/useContract';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { PocketIndexAddress, pocketIndexAddress } from '@/constants/network';
+import {
+  LpTokenAddress,
+  PocketIndexAddress,
+  pocketIndexAddress,
+} from '@/constants/network';
 import { useSnackbar } from 'notistack';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { sellIndexPart } from '@/utils/indexFunction';
+import { approveByindexLPToken, sellIndexPart } from '@/utils/indexFunction';
 interface Props {
   network: NetworkTypes;
 }
@@ -36,20 +40,22 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     network.coins[0],
   );
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
-  const [proveReceiptHash, setProveReceiptHash] = useState<Hash>();
-  const [pitchReceiptHash, setPitchReceiptHash] = useState<Hash>();
+  // lptoken approve receipt
+  const [approveByLpTokenReceipt, setApproveByLpTokenReceipt] =
+    useState<Hash>();
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const pocketIndexContract = usePocket(PocketIndexAddress);
+  const lpTokenContract = useLpToken(LpTokenAddress);
 
-  const { isSuccess: isApproveSuccess, isPending: isApprovePending } =
-    useWaitForTransactionReceipt({
-      hash: proveReceiptHash,
-    });
+  // approve indexContract by lpToken
+  const {
+    isSuccess: isApproveByLpTokenSuccess,
+    isPending: isApproveByLpTokenPending,
+  } = useWaitForTransactionReceipt({
+    hash: approveByLpTokenReceipt,
+  });
 
-  const { isSuccess: isPitchSuccess, isPending: isPitchPending } =
-    useWaitForTransactionReceipt({
-      hash: pitchReceiptHash,
-    });
+  
 
   const pocketAddress = useMemo(() => {
     return pocketIndexAddress.get(chainId);
@@ -110,54 +116,67 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
 
   const remove = async () => {
     setButtonLoading(true);
-    debugger;
-    const { receipHx } = await sellIndexPart(
-      pocketIndexContract,
-      erc20TokenInputContract,
-      userAddress as Address,
-      inputAmount,
-    );
-    console.log(receipHx, '回执来了');
-    if (receipHx) {
-      setProveReceiptHash(receipHx);
-    } else {
+    try {
+      const { approveHash } = await approveByindexLPToken(
+        lpTokenContract,
+        inputAmount,
+        // userAddress as Address,
+        PocketIndexAddress
+      );
+      setApproveByLpTokenReceipt(approveHash);
+      console.log(approveHash, '看看你');
+    } catch (e) {
       setButtonLoading(false);
       enqueueSnackbar('Approve Failed', {
         variant: 'error',
         autoHideDuration: 10000,
       });
-      setProveReceiptHash(undefined);
     }
 
-    // try {
-    //   const res = await sellIndexPart(
-    //     pocketIndexContract,
-    //     erc20TokenInputContract,
-    //     userAddress as Address,
-    //     inputAmount
-    //   )
-    //   console.log(res,'回执来了')
-    // }catch(e) {
-    //   console.log(e)
-    // }
+  
   };
-  useEffect(() => {
-    if (isPitchSuccess && !isPitchPending) {
-      console.log('拿到回执');
-      setButtonLoading(false);
-      enqueueSnackbar('Pitch Successful', { variant: 'success' });
-      setPitchReceiptHash(undefined);
+
+  const afterApproveAndSellIndex = useCallback(async () => {
+    try {
+      const { receipHx } = await sellIndexPart(
+        pocketIndexContract,
+        erc20TokenInputContract,
+        userAddress as Address,
+        inputAmount,
+      );
+    } catch (e) {
+      console.log(e, '咋回事');
     }
-  }, [isPitchSuccess, isPitchPending, enqueueSnackbar]);
+  }, [erc20TokenInputContract, inputAmount, userAddress, pocketIndexContract]);
 
   useEffect(() => {
-    if (isApproveSuccess && !isApprovePending) {
-      console.log('拿到回执');
-      setButtonLoading(false);
-      enqueueSnackbar('Approve Successful', { variant: 'success' });
-      setProveReceiptHash(undefined);
+    if (isApproveByLpTokenSuccess && !isApproveByLpTokenPending) {
+      console.log('拿到lp批准回执');
+      afterApproveAndSellIndex();
     }
-  }, [isApproveSuccess, isApprovePending, setButtonLoading, enqueueSnackbar]);
+  }, [
+    isApproveByLpTokenSuccess,
+    isApproveByLpTokenPending,
+    afterApproveAndSellIndex,
+  ]);
+
+  // useEffect(() => {
+  //   if (isPitchSuccess && !isPitchPending) {
+  //     console.log('拿到回执');
+  //     setButtonLoading(false);
+  //     enqueueSnackbar('Pitch Successful', { variant: 'success' });
+  //     setPitchReceiptHash(undefined);
+  //   }
+  // }, [isPitchSuccess, isPitchPending, enqueueSnackbar]);
+
+  // useEffect(() => {
+  //   if (isApproveSuccess && !isApprovePending) {
+  //     console.log('拿到回执');
+  //     setButtonLoading(false);
+  //     enqueueSnackbar('Approve Successful', { variant: 'success' });
+  //     setProveReceiptHash(undefined);
+  //   }
+  // }, [isApproveSuccess, isApprovePending, setButtonLoading, enqueueSnackbar]);
 
   useEffect(() => {
     if (
