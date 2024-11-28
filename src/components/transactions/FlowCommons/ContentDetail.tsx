@@ -7,7 +7,7 @@ interface Props {
 
 const ContentDetail: React.FC<Props> = ({ children }) => {
   return (
-    <Box sx={{ pt: 5 }}>
+    <Box sx={{ pt: 3 }}>
       <Typography sx={{ mb: 1 }} color="text.secondary">
         Transaction overview
       </Typography>

@@ -26,6 +26,7 @@ import {
 } from '@/utils/indexFunction';
 import ContentDetail from '@/components/transactions/FlowCommons/ContentDetail';
 import Row from '@/components/primitives/Row';
+import SellIndexErrors from '@/components/transactions/Index/SellIndexErrors';
 interface Props {
   network: NetworkTypes;
 }
@@ -248,15 +249,14 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
         >
           <ContentDetail>
             <Row caption={`IndexLPToken Balance`} captionVariant="caption">
-              {formatBalance(lpTokenBalance, 'lPToken')}
+              {formatBalance(lpTokenBalance, 'ILPToken')}
             </Row>
           </ContentDetail>
         </Box>
-
-        <Divider sx={{ mt: 4 }} />
-        <SwitchErrors
-          balance={selectedInputToken?.balance as string}
+        <SellIndexErrors
           inputAmount={inputAmount}
+          balance={lpTokenBalance}
+          content="Your indexLpToken is lower than the input amount."
         />
 
         <LoadingButton

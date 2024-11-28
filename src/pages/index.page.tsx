@@ -1,13 +1,25 @@
-import ConectWalletPaper from '@/components/ConectWalletPaper';
 import { ContentContainer } from '@/components/ContentContainer';
-import { useAccount } from 'wagmi';
-
+import { Paper, useTheme } from '@mui/material';
 const Home = () => {
-  const { isConnected } = useAccount();
+  const theme = useTheme();
+
   return (
     <>
       <ContentContainer>
-        {isConnected ? 22 : <ConectWalletPaper />}
+        <Paper
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            p: 4,
+            flex: 1,
+            backgroundColor: theme.palette.mode === 'dark' ? 'transparent' : '',
+          }}
+        >
+          11111
+        </Paper>
       </ContentContainer>
     </>
   );
