@@ -50,7 +50,7 @@ export const COINLISTS: CoinListTypes[] = [
   {
     name: 'Pocket Index',
     symbol: 'PocketIndex',
-    address: '0x111F608A01119707Dc70032B7738Af8B5131E949',
+    address: '0xA0d8c14E731882B504Ef9bFF93B8c9c2fD561642',
     logoURI:
       'https://coin-images.coingecko.com/coins/images/31696/large/POKT.jpg?1703257336',
   },
@@ -64,7 +64,7 @@ export const COINLISTS: CoinListTypes[] = [
   {
     name: 'Dai',
     symbol: 'DAI',
-    address: '0x9e5AAC1Ba1a2e6aEd6b32689DFcF62A509Ca96f3',
+    address: '0x7607Dda799CC9fb4696dCBF73e6d0B7f72f47138',
     logoURI:
       'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B175474E89094C44Da98b954EedeAC495271d0F/logo.png',
   },
@@ -78,23 +78,23 @@ export const COINLISTS: CoinListTypes[] = [
   {
     name: 'Gold',
     symbol: 'GLD',
-    address: '0xaa2A46a015dbA96Be4D24F1637002Ff1c8762b29',
+    address: '0x8A9F46dF987D9497DA1BdeC9AC3AFa177181c28b',
     logoURI:
       'https://assets.coingecko.com/coins/images/18125/thumb/lpgblc4h_400x400.jpg?1630570955',
   },
   {
     name: 'Pearl',
     symbol: 'PEARL',
-    address: '0xf644ef54bCDDcC70f5bf1ba0BCe93E75Fb445Ba5',
+    address: '0x85B27580e6a5ee78C65E3AdC2CE552213A114d94',
     logoURI:
       'https://assets.coingecko.com/coins/images/30799/large/Yp9H3agr_400x400.jpg?1696529660',
   },
   {
-    name: 'Diamond',
-    symbol: 'DMD',
-    address: '0x66871BD88bddC937c8Da5Fb8fc3Ef7ab09B2336a',
+    name: 'Link',
+    symbol: 'LINK',
+    address: '0x5657DD39f1a6343c24a55C99180EBF5bB6474880',
     logoURI:
-      'https://assets.coingecko.com/coins/images/24570/large/FCD_small_200.png?1648193725',
+      'https://assets.coingecko.com/coins/images/12738/thumb/AlphaToken_256x256.png?1617160876',
   },
 ];
 
