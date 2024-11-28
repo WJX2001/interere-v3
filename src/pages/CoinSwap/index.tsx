@@ -57,7 +57,6 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     network.factory,
   );
   const [reserves, setReserves] = useState<string[]>(reserveArr);
-
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
       userAddress as Address,
@@ -139,9 +138,11 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
         [selectedInputToken.address, selectedOutputToken.address],
       ])) as bigint[];
       const amount_out = formatUnits(values_out[1], decimal2);
+      console.log(amount_out,'')
       setOutputAmount(amount_out);
       setOutputLoading(false);
-    } catch {
+    } catch(e) {
+      console.log(e,'发生错误')
       setOutputAmount('NA');
       setOutputLoading(false);
     }
