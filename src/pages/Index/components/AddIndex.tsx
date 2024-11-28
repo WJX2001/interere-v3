@@ -104,7 +104,6 @@ const AddIndex: React.FC<Props> = ({ network }) => {
   }, [inputAmount, selectedInputToken.address, selectedInputToken.balance]);
 
   const deploy = async () => {
-    debugger;
     setButtonLoading(true);
     // usdt的余额 大于 usdt的 allowance 并且 输入的值必须大于 allowance的时候 执行 erc20的approve函数
     if (

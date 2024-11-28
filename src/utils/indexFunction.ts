@@ -20,7 +20,6 @@ export async function approveByindexLPToken(
   amount: string,
   spender: Address,
 ) {
-
   const tokenDecimals = await getDecimals(lpTokenContract);
   const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
   const approveHash = await lpTokenContract?.write?.approve([
@@ -28,8 +27,8 @@ export async function approveByindexLPToken(
     parsedAmount,
   ]);
   return {
-    approveHash
-  }
+    approveHash,
+  };
 }
 
 export async function sellIndexPart(
@@ -40,18 +39,25 @@ export async function sellIndexPart(
 ) {
   const tokenDecimals = await getDecimalsERC20(erc20Contract);
   const parsedAmount = ethers.utils.parseUnits(amount, tokenDecimals);
+  const res = await pocketContract?.write?.disolveWithLP([
+    parsedAmount,
+    userAddress,
+  ]);
+  return {
+    receipHx: res,
+  };
+}
+
+export async function getIndexLpTokenBalance(
+  lpTokenContract: ReturnType<typeof useLpToken>,
+  userAddress: Address,
+): Promise<bigint> {
   try {
-    const res = await pocketContract?.write?.disolveWithLP([
-      parsedAmount,
-      userAddress,
-    ]);
-    return {
-      receipHx: res,
-    };
+    const balance = await lpTokenContract?.read?.balanceOf([userAddress]);
+    console.log(balance);
+    return balance as bigint;
   } catch (e) {
-    console.log(e, '错了啊');
-    return {
-      receipHx: undefined,
-    };
+    console.log(e, 'error');
+    return 0n;
   }
 }

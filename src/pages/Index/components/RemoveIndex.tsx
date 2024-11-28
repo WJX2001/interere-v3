@@ -7,7 +7,7 @@ import {
 } from '@/utils/ethereumInfoFuntion';
 import { Box, Divider } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Address, Hash, zeroAddress } from 'viem';
+import { Address, formatEther, Hash, zeroAddress } from 'viem';
 import {
   useAccount,
   useBalance,
@@ -16,14 +16,16 @@ import {
 } from 'wagmi';
 import { useERC20, useLpToken, usePocket } from '@/hooks/useContract';
 import LoadingButton from '@mui/lab/LoadingButton';
-import {
-  LpTokenAddress,
-  PocketIndexAddress,
-  pocketIndexAddress,
-} from '@/constants/network';
+import { LpTokenAddress, PocketIndexAddress } from '@/constants/network';
 import { useSnackbar } from 'notistack';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { approveByindexLPToken, sellIndexPart } from '@/utils/indexFunction';
+import {
+  approveByindexLPToken,
+  getIndexLpTokenBalance,
+  sellIndexPart,
+} from '@/utils/indexFunction';
+import ContentDetail from '@/components/transactions/FlowCommons/ContentDetail';
+import Row from '@/components/primitives/Row';
 interface Props {
   network: NetworkTypes;
 }
@@ -33,19 +35,30 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
   const balanceData = useBalance({
     address: userAddress,
   });
-  const chainId = useChainId();
   const { enqueueSnackbar } = useSnackbar();
   const [inputAmount, setInputAmount] = useState('');
   const [selectedInputToken, setSelectedInputToken] = useState<CoinListTypes>(
     network.coins[0],
   );
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+  const [lpTokenBalance, setLpTokenBalance] = useState<string>('');
   // lptoken approve receipt
   const [approveByLpTokenReceipt, setApproveByLpTokenReceipt] =
     useState<Hash>();
+  // index sell receipt hash
+  const [sellIndexReceipt, setSellIndexReceipt] = useState<Hash>();
+
+  // erc20 contract instance
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
+  // pocket contract insatance
   const pocketIndexContract = usePocket(PocketIndexAddress);
+  // lp contract instance
   const lpTokenContract = useLpToken(LpTokenAddress);
+
+  const { isSuccess: isSellIndexSuccess, isPending: isSellIndexPending } =
+    useWaitForTransactionReceipt({
+      hash: sellIndexReceipt,
+    });
 
   // approve indexContract by lpToken
   const {
@@ -55,11 +68,15 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     hash: approveByLpTokenReceipt,
   });
 
-  
-
-  const pocketAddress = useMemo(() => {
-    return pocketIndexAddress.get(chainId);
-  }, [chainId]);
+  // get lpToken balance
+  const handleGetLpTokenBalance = useCallback(async () => {
+    const res = await getIndexLpTokenBalance(
+      lpTokenContract,
+      userAddress as Address,
+    );
+    console.log(formatEther(res), '我看看结果');
+    setLpTokenBalance(formatEther(res));
+  }, [lpTokenContract, userAddress]);
 
   const handleGetInputSymbolAndBalance = useCallback(async () => {
     const res = await getBalanceAndSymbolByWagmi(
@@ -74,7 +91,7 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
       const { balance, symbol } = res;
       const allowanceData = await allowance(
         erc20TokenInputContract,
-        pocketAddress,
+        PocketIndexAddress,
         userAddress as Address,
       );
       console.log(allowanceData, '我看看');
@@ -93,7 +110,6 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     network,
     balanceData,
     selectedInputToken,
-    pocketAddress,
   ]);
 
   const handleInputChange = async (value: string) => {
@@ -104,15 +120,15 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     }
   };
 
-  // const isButtonDisable = useMemo(() => {
-  //   const parsedInput1 = parseFloat(inputAmount);
-  //   return (
-  //     selectedInputToken?.address &&
-  //     !isNaN(parsedInput1) &&
-  //     0 < parsedInput1 &&
-  //     parsedInput1 <= parseFloat(selectedInputToken.allowance as string)
-  //   );
-  // }, [inputAmount, selectedInputToken.address, selectedInputToken.allowance]);
+  const isButtonDisable = useMemo(() => {
+    const parsedInput1 = parseFloat(inputAmount);
+    return (
+      selectedInputToken?.address &&
+      !isNaN(parsedInput1) &&
+      0 < parsedInput1 &&
+      parsedInput1 <= parseFloat(lpTokenBalance)
+    );
+  }, [inputAmount, selectedInputToken.address, lpTokenBalance]);
 
   const remove = async () => {
     setButtonLoading(true);
@@ -120,20 +136,18 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
       const { approveHash } = await approveByindexLPToken(
         lpTokenContract,
         inputAmount,
-        // userAddress as Address,
-        PocketIndexAddress
+        PocketIndexAddress,
       );
       setApproveByLpTokenReceipt(approveHash);
       console.log(approveHash, '看看你');
     } catch (e) {
+      console.log('error content:', e);
       setButtonLoading(false);
       enqueueSnackbar('Approve Failed', {
         variant: 'error',
         autoHideDuration: 10000,
       });
     }
-
-  
   };
 
   const afterApproveAndSellIndex = useCallback(async () => {
@@ -144,11 +158,47 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
         userAddress as Address,
         inputAmount,
       );
-    } catch (e) {
-      console.log(e, '咋回事');
+      setSellIndexReceipt(receipHx);
+    } catch {
+      enqueueSnackbar('Approve Failed', {
+        variant: 'error',
+        autoHideDuration: 10000,
+      });
+      setApproveByLpTokenReceipt(undefined);
     }
-  }, [erc20TokenInputContract, inputAmount, userAddress, pocketIndexContract]);
+  }, [
+    erc20TokenInputContract,
+    inputAmount,
+    userAddress,
+    pocketIndexContract,
+    enqueueSnackbar,
+  ]);
 
+  const formatBalance = (balance: string, symbol: string) => {
+    if (balance && symbol) {
+      return parseFloat(balance).toPrecision(6) + ' ' + symbol;
+    } else return '0.0';
+  };
+
+  // get selected token balance
+  useEffect(() => {
+    if (
+      userAddress !== zeroAddress &&
+      balanceData &&
+      erc20TokenInputContract?.address !== zeroAddress
+    ) {
+      handleGetInputSymbolAndBalance();
+    }
+  }, []);
+
+  // get lp token balance
+  useEffect(() => {
+    if (lpTokenContract?.address !== zeroAddress) {
+      handleGetLpTokenBalance();
+    }
+  }, [handleGetLpTokenBalance, lpTokenContract?.address]);
+
+  // after approve token, call sell index
   useEffect(() => {
     if (isApproveByLpTokenSuccess && !isApproveByLpTokenPending) {
       console.log('拿到lp批准回执');
@@ -160,33 +210,15 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
     afterApproveAndSellIndex,
   ]);
 
-  // useEffect(() => {
-  //   if (isPitchSuccess && !isPitchPending) {
-  //     console.log('拿到回执');
-  //     setButtonLoading(false);
-  //     enqueueSnackbar('Pitch Successful', { variant: 'success' });
-  //     setPitchReceiptHash(undefined);
-  //   }
-  // }, [isPitchSuccess, isPitchPending, enqueueSnackbar]);
-
-  // useEffect(() => {
-  //   if (isApproveSuccess && !isApprovePending) {
-  //     console.log('拿到回执');
-  //     setButtonLoading(false);
-  //     enqueueSnackbar('Approve Successful', { variant: 'success' });
-  //     setProveReceiptHash(undefined);
-  //   }
-  // }, [isApproveSuccess, isApprovePending, setButtonLoading, enqueueSnackbar]);
-
   useEffect(() => {
-    if (
-      userAddress !== zeroAddress &&
-      balanceData &&
-      erc20TokenInputContract?.address !== zeroAddress
-    ) {
-      handleGetInputSymbolAndBalance();
+    if (isSellIndexSuccess && !isSellIndexPending) {
+      setButtonLoading(false);
+      enqueueSnackbar('Sell sellIndexReceipt Successful', {
+        variant: 'success',
+      });
+      setSellIndexReceipt(undefined);
     }
-  }, []);
+  }, [isSellIndexSuccess, isSellIndexPending, enqueueSnackbar]);
 
   return (
     <>
@@ -209,6 +241,18 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
           onChange={handleInputChange}
         />
 
+        <Box
+          sx={{
+            width: '100%',
+          }}
+        >
+          <ContentDetail>
+            <Row caption={`IndexLPToken Balance`} captionVariant="caption">
+              {formatBalance(lpTokenBalance, 'lPToken')}
+            </Row>
+          </ContentDetail>
+        </Box>
+
         <Divider sx={{ mt: 4 }} />
         <SwitchErrors
           balance={selectedInputToken?.balance as string}
@@ -221,7 +265,7 @@ const RemoveIndex: React.FC<Props> = ({ network }) => {
             width: '100%',
           }}
           startIcon={<RemoveIcon />}
-          // disabled={!isButtonDisable}
+          disabled={!isButtonDisable}
           loading={buttonLoading}
           onClick={remove}
         >
