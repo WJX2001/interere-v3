@@ -1,11 +1,10 @@
 import SwitchAssetInput from '@/components/transactions/Switch/SwitchAssetInput';
-import SwitchErrors from '@/components/transactions/Switch/SwitchErrors';
 import { CoinListTypes, NetworkTypes } from '@/types';
 import {
   allowance,
   getBalanceAndSymbolByWagmi,
 } from '@/utils/ethereumInfoFuntion';
-import { Box, Divider } from '@mui/material';
+import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, formatEther, Hash, zeroAddress } from 'viem';
 import {
