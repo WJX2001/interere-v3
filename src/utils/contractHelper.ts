@@ -22,7 +22,6 @@ export const getContract = <TAbi extends Abi | readonly unknown[], TWalletClient
       wallet: signer,
     },
   }) as unknown as GetContractReturnType<TAbi, PublicClient, Address>
-
   return {
     ...c,
     account: signer?.account,

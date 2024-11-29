@@ -7,7 +7,7 @@ import ROUTER from '@/build/UniswapV2Router02.json';
 import FACTORY from '@/build/IUniswapV2Factory.json';
 import ERC20 from '@/build/ERC20.json';
 import PAIR from '@/build/IUniswapV2Pair.json';
-import LPTOKEN from '@/build/IndexLPToken.json'
+import LPTOKEN from '@/build/IndexLPToken.json';
 import PocketIndex from '@/build/PocketIndex.json';
 import { AbiType } from '@/types';
 import { fetchReserves } from '@/utils/ethereumInfoFuntion';
@@ -66,7 +66,7 @@ export const usePocket = (address: Address) => {
 
 export const useLpToken = (address: Address) => {
   return useContract(address, (LPTOKEN as AbiType).abi);
-}
+};
 
 export const useGetReserves = (
   address1: Address,
@@ -136,7 +136,7 @@ export const useGetReserves = (
     if (factory?.address !== zeroAddress && pair && ERC20_1 && ERC20_2) {
       getPariAddress();
     }
-  }, [factory, fetchPairAddress, pair, ERC20_1, ERC20_2, getPariAddress]);
+  }, [factory?.address, pair, ERC20_1, ERC20_2, getPariAddress]);
 
   return useMemo(() => {
     return {
@@ -147,4 +147,3 @@ export const useGetReserves = (
     };
   }, [reserves, pair, isError, isGetReserveLoading]);
 };
-

@@ -43,7 +43,7 @@ export async function quoteMintLiquidity(
     totalSupply = 0;
   }
 
-  console.error(_reserveA, _reserveB, totalSupply);
+  console.log(_reserveA, _reserveB, totalSupply);
   const token1Decimals = await getDecimalsERC20(ERC20Coin1);
   const token2Decimals = await getDecimalsERC20(ERC20Coin2);
 
