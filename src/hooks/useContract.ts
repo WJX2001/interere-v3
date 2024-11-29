@@ -126,9 +126,9 @@ export const useGetReserves = (
   }, [address1, address2, ERC20_1, ERC20_2, pair, address, pairAddress]);
 
   useEffect(() => {
+    setGetReserveIsLoading(true);
     if (pairAddress !== zeroAddress) {
       fetchPairAddress();
-      setGetReserveIsLoading(true);
     }
   }, [pairAddress, fetchPairAddress]);
 

@@ -9,6 +9,7 @@ import {
 import { SwitchVerticalIcon } from '@heroicons/react/solid';
 import {
   Box,
+  CircularProgress,
   Divider,
   Grid2,
   IconButton,
@@ -21,10 +22,7 @@ import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, formatUnits } from 'viem';
 import { useAccount, useBalance, useChainId } from 'wagmi';
-import {
-  useERC20,
-  useGetReserves,
-} from '@/hooks/useContract';
+import { useERC20, useGetReserves } from '@/hooks/useContract';
 import { uuid } from '@/utils';
 import SwapButton from '@/components/transactions/Button/SwapButton';
 interface Props {
@@ -51,7 +49,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
   const erc20TokenInputContract = useERC20(selectedInputToken.address);
   const erc20TokenOutputContract = useERC20(selectedOutputToken.address);
   // obtain token reserve
-  const { reserveArr } = useGetReserves(
+  const { reserveArr, isGetReserveLoading } = useGetReserves(
     selectedInputToken.address,
     selectedOutputToken.address,
     network.factory,
@@ -140,8 +138,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       const amount_out = formatUnits(values_out[1], decimal2);
       setOutputAmount(amount_out);
       setOutputLoading(false);
-    } catch(e) {
-      console.error(e,'error')
+    } catch (e) {
+      console.error(e, 'error');
       setOutputAmount('NA');
       setOutputLoading(false);
     }
@@ -164,7 +162,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
     ) {
       handleGetAmount();
       setOutputLoading(true);
-    }else {
+    } else {
       setOutputAmount('');
     }
   }, [
@@ -221,8 +219,8 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
       <Box
         sx={(theme) => ({
           paddingTop: theme.spacing(12),
-          display: 'flex', 
-          justifyContent: 'center', 
+          display: 'flex',
+          justifyContent: 'center',
           alignItems: 'center',
         })}
       >
@@ -313,10 +311,22 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             </Box>
             <Grid2 container direction="row" sx={{ textAlign: 'center' }}>
               <Grid2 size={6}>
-                {formatReserve(reserveArr[0], selectedInputToken.symbol)}
+                {isGetReserveLoading ? (
+                  <Box sx={{ flex: 1 }}>
+                    <CircularProgress color="inherit" size="16px" />
+                  </Box>
+                ) : (
+                  formatReserve(reserveArr[0], selectedInputToken.symbol)
+                )}
               </Grid2>
               <Grid2 size={6}>
-                {formatReserve(reserveArr[1], selectedOutputToken.symbol)}
+                {isGetReserveLoading ? (
+                  <Box sx={{ flex: 1 }}>
+                    <CircularProgress color="inherit" size="16px" />
+                  </Box>
+                ) : (
+                  formatReserve(reserveArr[1], selectedOutputToken.symbol)
+                )}
               </Grid2>
             </Grid2>
           </Box>
@@ -335,7 +345,7 @@ const CoinSwap: React.FC<Props> = ({ network }) => {
             }}
           >
             <SwapButton
-              coin1Balance = {selectedInputToken?.balance as string}
+              coin1Balance={selectedInputToken?.balance as string}
               token1Address={selectedInputToken.address}
               token2Address={selectedOutputToken.address}
               inputAmount={inputAmount}
