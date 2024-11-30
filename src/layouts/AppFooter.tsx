@@ -1,27 +1,27 @@
 import { Box, Link, SvgIcon, Typography } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import XIcon from '@mui/icons-material/X';
+// import XIcon from '@mui/icons-material/X';
 const FOOTER_LINKS = [
-  {
-    href: 'https://aave.com/terms-of-service',
-    label: 'Terms',
-    key: 'Terms',
-  },
-  {
-    href: 'https://aave.com/privacy-policy/',
-    label: 'Privacy',
-    key: 'Privacy',
-  },
+  // {
+  //   href: 'https://aave.com/terms-of-service',
+  //   label: 'Terms',
+  //   key: 'Terms',
+  // },
+  // {
+  //   href: 'https://aave.com/privacy-policy/',
+  //   label: 'Privacy',
+  //   key: 'Privacy',
+  // },
   {
     href: 'https://docs.aave.com/hub/',
     label: 'Docs',
     key: 'Docs',
   },
-  {
-    href: 'https://docs.aave.com/faq/',
-    label: 'FAQS',
-    key: 'FAQS',
-  },
+  // {
+  //   href: 'https://docs.aave.com/faq/',
+  //   label: 'FAQS',
+  //   key: 'FAQS',
+  // },
 ];
 
 const FOOTER_ICONS = [
@@ -30,11 +30,11 @@ const FOOTER_ICONS = [
     icon: <GitHubIcon />,
     title: 'Github',
   },
-  {
-    href: '',
-    icon: <XIcon fontSize="small" />,
-    title: 'Lens',
-  },
+  // {
+  //   href: '',
+  //   icon: <XIcon fontSize="small" />,
+  //   title: 'Lens',
+  // },
 ];
 
 const AppFooter = () => {

@@ -18,7 +18,7 @@ const Home = () => {
             backgroundColor: theme.palette.mode === 'dark' ? 'transparent' : '',
           }}
         >
-          11111
+          <h1>Welcome to DexLink</h1>
         </Paper>
       </ContentContainer>
     </>
