@@ -1,28 +1,28 @@
-import { Box, Link, SvgIcon, Typography } from '@mui/material';
+import { Box, Link, SvgIcon } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 // import XIcon from '@mui/icons-material/X';
-const FOOTER_LINKS = [
-  // {
-  //   href: 'https://aave.com/terms-of-service',
-  //   label: 'Terms',
-  //   key: 'Terms',
-  // },
-  // {
-  //   href: 'https://aave.com/privacy-policy/',
-  //   label: 'Privacy',
-  //   key: 'Privacy',
-  // },
-  {
-    href: 'https://docs.aave.com/hub/',
-    label: 'Docs',
-    key: 'Docs',
-  },
-  // {
-  //   href: 'https://docs.aave.com/faq/',
-  //   label: 'FAQS',
-  //   key: 'FAQS',
-  // },
-];
+// const FOOTER_LINKS = [
+//   {
+//     href: 'https://aave.com/terms-of-service',
+//     label: 'Terms',
+//     key: 'Terms',
+//   },
+//   {
+//     href: 'https://aave.com/privacy-policy/',
+//     label: 'Privacy',
+//     key: 'Privacy',
+//   },
+//   {
+//     href: 'https://docs.aave.com/hub/',
+//     label: 'Docs',
+//     key: 'Docs',
+//   },
+//   {
+//     href: 'https://docs.aave.com/faq/',
+//     label: 'FAQS',
+//     key: 'FAQS',
+//   },
+// ];
 
 const FOOTER_ICONS = [
   {
@@ -56,7 +56,7 @@ const AppFooter = () => {
       })}
     >
       <Box sx={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        {FOOTER_LINKS.map((link) => (
+        {/* {FOOTER_LINKS.map((link) => (
           <Link
             underline="none"
             href={link.href}
@@ -73,7 +73,7 @@ const AppFooter = () => {
               {link.label}
             </Typography>
           </Link>
-        ))}
+        ))} */}
       </Box>
       <Box
         sx={{
