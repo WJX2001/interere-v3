@@ -8,6 +8,8 @@ import { SnackbarProvider } from 'notistack';
 import Index from './pages/Index';
 import Liquidity from './pages/Liquidity';
 import Home from './pages/index.page';
+import Staking from './pages/Staking';
+import Loans from './pages/Loans';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
                   path="/liquidity"
                   element={<Liquidity network={network} />}
                 />
+                <Route path='/staking' element={<Staking />}/>
+                <Route path='loans' element={<Loans />}/>
               </Routes>
             </React.Fragment>
           )}
